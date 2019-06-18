@@ -63,9 +63,10 @@ namespace XCamera.Shared
 		}
 
 		public static readonly BindableProperty CaptureCommandProperty = BindableProperty.Create(
-			nameof(Capture),
-			typeof(ICommand),
-			typeof(XCameraView));
+			propertyName: nameof(CaptureCommandProperty),
+			returnType: typeof(ICommand),
+			declaringType: typeof(XCameraView),
+			defaultValue: null);
 
 		public ICommand Capture
 		{
@@ -77,10 +78,13 @@ namespace XCamera.Shared
 			}
 		}
 
-		public static readonly BindableProperty StartCommandProperty = BindableProperty.Create(
-			nameof(StartCamera),
-			typeof(ICommand),
-			typeof(XCameraView));
+		//public static readonly BindableProperty StartCommandProperty = BindableProperty.Create(
+		//	propertyName: nameof(StartCamera),
+		//	returnType: typeof(ICommand),
+		//	declaringType: typeof(XCameraView),
+		//	defaultValue: null);
+
+		public static readonly BindableProperty StartCommandProperty = BindableProperty.Create<XCameraView, ICommand>(p => p.StartCamera, null);
 
 		public ICommand StartCamera
 		{

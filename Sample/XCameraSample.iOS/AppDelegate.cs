@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Foundation;
+﻿using Foundation;
 using UIKit;
+using XCamera;
 
 namespace XCameraSample.iOS
 {
@@ -22,6 +19,7 @@ namespace XCameraSample.iOS
 		//
 		public override bool FinishedLaunching(UIApplication app, NSDictionary options)
 		{
+			XCameraInstance.Init();
 			global::Xamarin.Forms.Forms.Init();
 			LoadApplication(new App());
 

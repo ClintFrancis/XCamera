@@ -9,13 +9,13 @@ using XCamera.Shared;
 [assembly: ExportRenderer(typeof(XCameraView), typeof(DroidCameraPreview))]
 namespace XCamera.Droid
 {
-	public class CameraPreviewRenderer : ViewRenderer<XCameraView, DroidCameraPreview>
+	public class XCameraRenderer : ViewRenderer<XCameraView, DroidCameraPreview>
 	{
 		DroidCameraPreview cameraPreview;
 		XCameraView element;
 		Action<byte[]> captureBytesCallbackAction;
 
-		public CameraPreviewRenderer(Context context) : base(context)
+		public XCameraRenderer(Context context) : base(context)
 		{
 		}
 

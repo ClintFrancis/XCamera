@@ -176,7 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CameraPreviewRenderer.cs" />
+    <Compile Include="XCameraRenderer.cs" />
     <Compile Include="DroidCameraPreview.cs" />
     <Compile Include="Camera2Basic\AutoFitTextureView.cs" />
     <Compile Include="Camera2Basic\CameraResult.cs" />
@@ -191,6 +191,7 @@
     <Compile Include="Camera2Basic\Listeners\CameraCaptureStillPictureSessionCallback.cs" />
     <Compile Include="Camera2Basic\Listeners\CameraStateListener.cs" />
     <Compile Include="Camera2Basic\Listeners\ImageAvailableListener.cs" />
+    <Compile Include="XCameraInstance.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

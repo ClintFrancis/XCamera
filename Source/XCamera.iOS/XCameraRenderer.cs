@@ -2,17 +2,18 @@
 using System.ComponentModel;
 using UIKit;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
 using XCamera.iOS;
 using XCamera.Shared;
 
-[assembly: ExportRenderer(typeof(XCameraView), typeof(AVCameraCaptureRenderer))]
+[assembly: ExportRenderer(typeof(XCameraView), typeof(XCameraRenderer))]
 namespace XCamera.iOS
 {
-	public class AVCameraCaptureRenderer : ViewRenderer<XCameraView, AVCameraCaptureView>
+	public class XCameraRenderer : ViewRenderer<XCameraView, XCameraCaptureView>
 	{
 		XCameraView element;
-		AVCameraCaptureView uiCameraPreview;
+		XCameraCaptureView uiCameraPreview;
 		Action<byte[]> capturePathCallbackAction;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<XCameraView> e)
@@ -32,7 +33,7 @@ namespace XCamera.iOS
 			{
 				if (Control == null)
 				{
-					uiCameraPreview = new AVCameraCaptureView(e.NewElement.CameraOption);
+					uiCameraPreview = new XCameraCaptureView(e.NewElement.CameraOption);
 					uiCameraPreview.ImageCaptured += UiCameraPreview_ImageCaptured;
 					SetNativeControl(uiCameraPreview);
 				}

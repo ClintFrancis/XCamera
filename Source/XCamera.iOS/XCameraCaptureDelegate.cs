@@ -5,14 +5,14 @@ using Foundation;
 
 namespace XCamera.iOS
 {
-	public class AVCameraCaptureDelegate : NSObject, IAVCapturePhotoCaptureDelegate
+	public class XCameraCaptureDelegate : NSObject, IAVCapturePhotoCaptureDelegate
 	{
 		public AVCapturePhotoSettings RequestedPhotoSettings { get; set; }
 		NSData PhotoData { get; set; }
 		Action<byte[]> CompletionHandler;
 		byte[] imageBytes;
 
-		public AVCameraCaptureDelegate(AVCapturePhotoSettings requestedPhotoSettings, Action<byte[]> completionHandler)
+		public XCameraCaptureDelegate(AVCapturePhotoSettings requestedPhotoSettings, Action<byte[]> completionHandler)
 		{
 			RequestedPhotoSettings = requestedPhotoSettings;
 			CompletionHandler = completionHandler;

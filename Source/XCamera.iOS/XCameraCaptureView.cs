@@ -20,14 +20,14 @@ namespace XCamera.iOS
 		}
 	}
 
-	public class AVCameraCaptureView : UIView
+	public class XCameraCaptureView : UIView
 	{
 		AVCaptureVideoPreviewLayer previewLayer;
 		AVCaptureSession captureSession;
 		AVCapturePhotoOutput photoOutput;
 		AVCapturePhotoSettings photoSettings;
 		AVCaptureDeviceInput videoDeviceInput;
-		AVCameraCaptureDelegate photoCaptureDelegate;
+		XCameraCaptureDelegate photoCaptureDelegate;
 		CameraOptions cameraOptions;
 
 		public event EventHandler<EventArgs> Tapped;
@@ -35,7 +35,7 @@ namespace XCamera.iOS
 
 		public bool IsPreviewing { get; private set; }
 
-		public AVCameraCaptureView(CameraOptions options)
+		public XCameraCaptureView(CameraOptions options)
 		{
 			cameraOptions = options;
 			IsPreviewing = false;
@@ -214,7 +214,7 @@ namespace XCamera.iOS
 				photoSettings.PreviewPhotoFormat = new NSDictionary<NSString, NSObject>(CoreVideo.CVPixelBuffer.PixelFormatTypeKey, photoSettings.AvailablePreviewPhotoPixelFormatTypes.First());
 
 			// Use a separate object for the photo capture delegate to isolate each capture life cycle.
-			photoCaptureDelegate = new AVCameraCaptureDelegate(photoSettings, CompletionHandler);
+			photoCaptureDelegate = new XCameraCaptureDelegate(photoSettings, CompletionHandler);
 
 			photoOutput.CapturePhoto(photoSettings, photoCaptureDelegate);
 		}
