@@ -18,4 +18,7 @@
     <Folder Include="Pages\" />
     <Folder Include="VewModels\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Source\XCamera.Shared\XCamera.Shared.csproj" />
+  </ItemGroup>
 </Project>

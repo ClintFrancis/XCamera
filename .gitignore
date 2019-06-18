@@ -8,3 +8,10 @@ Source/XCamera.Android/obj
 Source/XCamera.NuGet/bin
 Source/XCamera.NuGet/obj
 Source/XCamera.Shared/obj
+Sample/XCameraSample/bin
+Sample/XCameraSample.Android/bin
+Sample/XCameraSample.iOS/bin
+Source/XCamera.Android/bin
+Source/XCamera.iOS/bin
+Source/XCamera.iOS/obj
+Source/XCamera.Shared/bin

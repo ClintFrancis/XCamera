@@ -5,7 +5,7 @@ using Android.OS;
 
 namespace Camera2Basic
 {
-	public class ErrorDialog : Android.Support.V4.App.DialogFragment
+	public class ErrorDialog : DialogFragment
 	{
 		private static readonly string ARG_MESSAGE = "message";
 		private static Activity mActivity;

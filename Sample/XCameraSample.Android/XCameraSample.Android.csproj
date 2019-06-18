@@ -101,6 +101,14 @@
       <Project>{2C670BC3-CB6B-4B78-9BB4-AE99C563F099}</Project>
       <Name>XCameraSample</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Source\XCamera.Android\XCamera.Android.csproj">
+      <Project>{1536A75B-0F3F-47A1-AF9D-AAC19F07B48B}</Project>
+      <Name>XCamera.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\XCamera.Shared\XCamera.Shared.csproj">
+      <Project>{EA0C761A-DBE8-450B-83E1-1329EBC659BC}</Project>
+      <Name>XCamera.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

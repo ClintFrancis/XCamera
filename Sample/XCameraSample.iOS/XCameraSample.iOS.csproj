@@ -133,5 +133,13 @@
       <Project>{2C670BC3-CB6B-4B78-9BB4-AE99C563F099}</Project>
       <Name>XCameraSample</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Source\XCamera.Shared\XCamera.Shared.csproj">
+      <Project>{EA0C761A-DBE8-450B-83E1-1329EBC659BC}</Project>
+      <Name>XCamera.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\XCamera.iOS\XCamera.iOS.csproj">
+      <Project>{C93B1D91-EF1F-42F3-8069-A6539796CA9A}</Project>
+      <Name>XCamera.iOS</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
