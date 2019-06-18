@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(NuGetAuthoringPath)\NuGet.Packaging.Authoring.props" Condition="Exists('$(NuGetAuthoringPath)\NuGet.Packaging.Authoring.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0E720209-C451-449B-B5D6-9A94F88D1122}</ProjectGuid>
+    <Description>XCamera</Description>
+    <PackageId>XCamera</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>clintfrancis</Authors>
+    <DevelopmentDependency>false</DevelopmentDependency>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>XCamera</RootNamespace>
+    <UsePartialTypes>false</UsePartialTypes>
+    <AssemblyName>XCamera.NuGet</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <OutputPath>bin\Debug</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XCamera.Android\XCamera.Android.csproj">
+      <Project>{1536A75B-0F3F-47A1-AF9D-AAC19F07B48B}</Project>
+      <Name>XCamera.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XCamera.iOS\XCamera.iOS.csproj">
+      <Project>{C93B1D91-EF1F-42F3-8069-A6539796CA9A}</Project>
+      <Name>XCamera.iOS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XCamera.Shared\XCamera.Shared.csproj">
+      <Project>{AE099C83-B0FC-4AB7-A74B-A10D26A1D114}</Project>
+      <Name>XCamera.Shared</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NuGet.Build.Packaging">
+      <Version>0.2.5-dev.8</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.Common.targets" />
+  <Import Project="$(NuGetAuthoringPath)\NuGet.Packaging.Authoring.targets" Condition="Exists('$(NuGetAuthoringPath)\NuGet.Packaging.Authoring.targets')" />
+</Project>

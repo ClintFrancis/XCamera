@@ -1,0 +1,35 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XCamera.iOS", "XCamera.iOS\XCamera.iOS.csproj", "{C93B1D91-EF1F-42F3-8069-A6539796CA9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XCamera.Android", "XCamera.Android\XCamera.Android.csproj", "{1536A75B-0F3F-47A1-AF9D-AAC19F07B48B}"
+EndProject
+Project("{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}") = "XCamera.NuGet", "XCamera.NuGet\XCamera.NuGet.nuproj", "{0E720209-C451-449B-B5D6-9A94F88D1122}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XCamera.Shared", "XCamera.Shared\XCamera.Shared.csproj", "{AE099C83-B0FC-4AB7-A74B-A10D26A1D114}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C93B1D91-EF1F-42F3-8069-A6539796CA9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C93B1D91-EF1F-42F3-8069-A6539796CA9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C93B1D91-EF1F-42F3-8069-A6539796CA9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C93B1D91-EF1F-42F3-8069-A6539796CA9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1536A75B-0F3F-47A1-AF9D-AAC19F07B48B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1536A75B-0F3F-47A1-AF9D-AAC19F07B48B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1536A75B-0F3F-47A1-AF9D-AAC19F07B48B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1536A75B-0F3F-47A1-AF9D-AAC19F07B48B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E720209-C451-449B-B5D6-9A94F88D1122}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E720209-C451-449B-B5D6-9A94F88D1122}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E720209-C451-449B-B5D6-9A94F88D1122}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E720209-C451-449B-B5D6-9A94F88D1122}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE099C83-B0FC-4AB7-A74B-A10D26A1D114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE099C83-B0FC-4AB7-A74B-A10D26A1D114}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE099C83-B0FC-4AB7-A74B-A10D26A1D114}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE099C83-B0FC-4AB7-A74B-A10D26A1D114}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

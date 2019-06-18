@@ -1,0 +1,10 @@
+Sample/.vs
+Sample/XCameraSample/obj
+Sample/XCameraSample.Android/obj
+Sample/XCameraSample.iOS/obj
+Source/.vs
+Source/XCamera/obj
+Source/XCamera.Android/obj
+Source/XCamera.NuGet/bin
+Source/XCamera.NuGet/obj
+Source/XCamera.Shared/obj
