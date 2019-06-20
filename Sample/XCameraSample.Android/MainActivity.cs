@@ -18,6 +18,8 @@ namespace XCameraSample.Droid
 			base.OnCreate(savedInstanceState);
 
 			XCameraInstance.Init();
+			FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
+
 			CrossCurrentActivity.Current.Init(this, savedInstanceState);
 
 			Xamarin.Essentials.Platform.Init(this, savedInstanceState);

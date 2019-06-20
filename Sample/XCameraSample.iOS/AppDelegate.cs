@@ -20,6 +20,7 @@ namespace XCameraSample.iOS
 		public override bool FinishedLaunching(UIApplication app, NSDictionary options)
 		{
 			XCameraInstance.Init();
+			FFImageLoading.Forms.Platform.CachedImageRenderer.Init();
 			global::Xamarin.Forms.Forms.Init();
 			LoadApplication(new App());
 

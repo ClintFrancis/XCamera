@@ -21,14 +21,7 @@ namespace XCamera.Droid
 {
 	public class ImageCaptureEventArgs : EventArgs
 	{
-		public string Filepath { get; private set; }
-
 		public byte[] Bytes { get; set; }
-
-		public ImageCaptureEventArgs(string filePath)
-		{
-			this.Filepath = filePath;
-		}
 
 		public ImageCaptureEventArgs(byte[] bytes)
 		{
@@ -36,11 +29,11 @@ namespace XCamera.Droid
 		}
 	}
 
-	public class DroidCameraPreview : ViewGroup, Camera2Basic.ICameraPreview
+	public class XCameraCaptureView : ViewGroup, Camera2Basic.ICameraPreview
 	{
 		public event EventHandler<ImageCaptureEventArgs> ImageCaptured;
 
-		public DroidCameraPreview(Context context, CameraOptions option) : base(context)
+		public XCameraCaptureView(Context context, CameraOptions option) : base(context)
 		{
 			CameraOption = option;
 
@@ -48,7 +41,7 @@ namespace XCamera.Droid
 			var nativePath = Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDocuments);
 
 			// Camera Setup
-			File = new Java.IO.File(path, "pic.jpg");
+			File = new Java.IO.File(path, "pic.jpg"); // TODO Depreciate this
 			CaptureCallback = new CameraCaptureListener(this);
 			mOnImageAvailableListener = new ImageAvailableListener(this);
 			mStateCallback = new CameraStateListener(this);

@@ -1,8 +1,11 @@
 ﻿using System;
+using System.IO;
+using FFImageLoading.Forms;
 using Plugin.Media;
 using Xamarin.Forms;
 using XCamera.Shared;
 using XCameraSample.Utils;
+using XCameraSample.ViewModels;
 
 namespace XCameraSample.Pages
 {
@@ -13,15 +16,19 @@ namespace XCameraSample.Pages
 		private Label messageLabel;
 		private Label titleLabel;
 		CameraOptions cameraOption;
+		CaptureViewModel captureModel;
+		CachedImage cachedCapture;
 
 		public CameraPage()
 		{
-			//BindingContext = captureModel = new CaptureViewModel(Navigation);
+			BindingContext = captureModel = new CaptureViewModel();
 			Title = "Camera";
 			layout = new RelativeLayout();
 
 			if (CrossMedia.Current.IsCameraAvailable)
 			{
+				BackgroundColor = Color.Black;
+
 				// Camera Preview
 				cameraPreview = new XCameraView();
 				//cameraPreview.CameraOption = Settings.CameraOption;
@@ -30,7 +37,11 @@ namespace XCameraSample.Pages
 
 				layout.Children.Add(cameraPreview,
 					Constraint.Constant(0),
-					Constraint.Constant(0),
+					Constraint.RelativeToParent((parent) =>
+					{
+						var viewHeight = MathUtils.FitSize4X3(parent.Width, parent.Height).Height;
+						return parent.Height / 2 - viewHeight / 2;
+					}),
 					Constraint.RelativeToParent((parent) =>
 					{
 						return MathUtils.FitSize4X3(parent.Width, parent.Height).Width;
@@ -57,15 +68,15 @@ namespace XCameraSample.Pages
 					Constraint.RelativeToParent((parent) => { return (parent.Height * .9) - (buttonSize * .5); }));
 
 				// Last Capture
-				//cachedCapture = new CachedImage();
-				//cachedCapture.Aspect = Aspect.AspectFill;
-				//cachedCapture.BackgroundColor = Color.White;
+				cachedCapture = new CachedImage();
+				cachedCapture.Aspect = Aspect.AspectFill;
+				cachedCapture.BackgroundColor = Color.White;
 
-				//layout.Children.Add(cachedCapture,
-				//	Constraint.Constant(20),
-				//	Constraint.RelativeToView(captureButton, (parent, sibling) => { return sibling.Y; }),
-				//	Constraint.Constant(buttonSize),
-				//	Constraint.Constant(buttonSize));
+				layout.Children.Add(cachedCapture,
+					Constraint.Constant(20),
+					Constraint.RelativeToView(captureButton, (parent, sibling) => { return sibling.Y; }),
+					Constraint.Constant(buttonSize),
+					Constraint.Constant(buttonSize));
 
 				this.ToolbarItems.Add(
 					new ToolbarItem("Toggle", null, () => ToggleCamera()) { Icon = "toggle.png" }
@@ -148,12 +159,12 @@ namespace XCameraSample.Pages
 
 		void ProcessCameraPhoto(byte[] imageBytes)
 		{
-			//var filename = captureModel.SaveBytes(imageBytes);
+			var filename = captureModel.SaveBytes(imageBytes);
 
-			//cachedCapture.Source = ImageSource.FromStream(() =>
-			//{
-			//	return new MemoryStream(imageBytes);
-			//});
+			cachedCapture.Source = ImageSource.FromStream(() =>
+			{
+				return new MemoryStream(imageBytes);
+			});
 		}
 
 		protected override void OnAppearing()

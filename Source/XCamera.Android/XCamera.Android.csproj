@@ -177,7 +177,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XCameraRenderer.cs" />
-    <Compile Include="DroidCameraPreview.cs" />
+    <Compile Include="XCameraCaptureView.cs" />
     <Compile Include="Camera2Basic\AutoFitTextureView.cs" />
     <Compile Include="Camera2Basic\CameraResult.cs" />
     <Compile Include="Camera2Basic\CameraState.cs" />

@@ -6,12 +6,12 @@ using Xamarin.Forms.Platform.Android;
 using XCamera.Droid;
 using XCamera.Shared;
 
-[assembly: ExportRenderer(typeof(XCameraView), typeof(DroidCameraPreview))]
+[assembly: ExportRenderer(typeof(XCameraView), typeof(XCameraCaptureView))]
 namespace XCamera.Droid
 {
-	public class XCameraRenderer : ViewRenderer<XCameraView, DroidCameraPreview>
+	public class XCameraRenderer : ViewRenderer<XCameraView, XCameraCaptureView>
 	{
-		DroidCameraPreview cameraPreview;
+		XCameraCaptureView cameraPreview;
 		XCameraView element;
 		Action<byte[]> captureBytesCallbackAction;
 
@@ -25,7 +25,7 @@ namespace XCamera.Droid
 
 			if (Control == null)
 			{
-				cameraPreview = new DroidCameraPreview(Context, e.NewElement.CameraOption);
+				cameraPreview = new XCameraCaptureView(Context, e.NewElement.CameraOption);
 				cameraPreview.ImageCaptured += ImageCaptured;
 				SetNativeControl(cameraPreview);
 			}
