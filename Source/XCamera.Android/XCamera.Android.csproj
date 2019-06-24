@@ -198,7 +198,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XCamera.Shared\XCamera.Shared.csproj">
-      <Project>{EA0C761A-DBE8-450B-83E1-1329EBC659BC}</Project>
+      <Project>{26C1F3A0-9646-411D-AE5A-9461EB73229D}</Project>
       <Name>XCamera.Shared</Name>
     </ProjectReference>
   </ItemGroup>

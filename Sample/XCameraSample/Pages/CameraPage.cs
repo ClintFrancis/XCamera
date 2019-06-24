@@ -95,13 +95,13 @@ namespace XCameraSample.Pages
 				messageLabel.Text = "The camera not supported on this device.";
 
 				layout.Children.Add(messageLabel,
-				Constraint.RelativeToParent((parent) =>
-				{
-					return (parent.Width * .5) - (messageLabel.Width / 2);
-				}),
 					Constraint.RelativeToParent((parent) =>
 					{
-						return (parent.Height * .8) - (messageLabel.Height);
+						return (parent.Width * .5 - messageLabel.Width * .5);
+					}),
+					Constraint.RelativeToParent((parent) =>
+					{
+						return (parent.Height * .4);
 					})
 				);
 
@@ -116,13 +116,13 @@ namespace XCameraSample.Pages
 				};
 				titleLabel.Text = "No Camera";
 				layout.Children.Add(titleLabel,
-				Constraint.RelativeToParent((parent) =>
-				{
-					return (parent.Width * .5) - (titleLabel.Width / 2);
-				}),
+					Constraint.RelativeToParent((parent) =>
+					{
+						return (parent.Width * .5 - titleLabel.Width * .5);
+					}),
 					Constraint.RelativeToView(messageLabel, (parent, sibling) =>
 					{
-						return messageLabel.Y - titleLabel.Height - 10;
+						return sibling.Y - titleLabel.Height - 10;
 					})
 				);
 			}
