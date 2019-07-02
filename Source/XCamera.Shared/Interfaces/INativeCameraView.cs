@@ -8,6 +8,7 @@ namespace XCamera.Shared.Interfaces
 		void Capture();
 		void StartPreview();
 		void StopPreview();
+		void SetFrameRate(int frameRate);
 		CameraOptions CameraOption { get; set; }
 		event ImageCapturedEventHandler ImageCaptured;
 	}

@@ -43,6 +43,18 @@ namespace XCamera.Shared
 			set { SetValue(AutoVisibleProperty, value); }
 		}
 
+		public static readonly BindableProperty FrameRateProperty = BindableProperty.Create(
+			propertyName: nameof(FrameRate),
+			returnType: typeof(int),
+			declaringType: typeof(XCameraView),
+			defaultValue: 60);
+
+		public int FrameRate
+		{
+			get { return (int)GetValue(FrameRateProperty); }
+			set { SetValue(FrameRateProperty, value); }
+		}
+
 		// File Path callback
 		public static readonly BindableProperty CaptureBytesCallbackProperty = BindableProperty.Create(
 			propertyName: nameof(CaptureBytesCallback),

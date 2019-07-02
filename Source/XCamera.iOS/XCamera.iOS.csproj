@@ -62,12 +62,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XCameraCaptureDelegate.cs" />
+    <Compile Include="XCameraPhotoCaptureDelegate.cs" />
     <Compile Include="XCameraCaptureView.cs" />
     <Compile Include="MissingBindings.cs" />
     <Compile Include="UIXCameraView.cs" />
     <Compile Include="XCameraInstance.cs" />
     <Compile Include="XCameraRenderer.cs" />
+    <Compile Include="XCameraVideoOutputDelegate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

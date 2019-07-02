@@ -29,7 +29,7 @@ namespace XCamera.iOS
 			{
 				if (Control == null)
 				{
-					uiCameraPreview = new XCameraCaptureView(e.NewElement.CameraOption);
+					uiCameraPreview = new XCameraCaptureView(e.NewElement.CameraOption, e.NewElement.FrameRate);
 					uiCameraPreview.ImageCaptured += UiCameraPreview_ImageCaptured;
 					SetNativeControl(uiCameraPreview);
 				}
@@ -49,6 +49,12 @@ namespace XCamera.iOS
 			{
 				var view = (XCameraView)sender;
 				uiCameraPreview.CameraOption = view.CameraOption;
+			}
+
+			if (e.PropertyName == CameraPropertyIds.FrameRate)
+			{
+				var view = (XCameraView)sender;
+				uiCameraPreview.SetFrameRate(view.FrameRate);
 			}
 
 			else if (e.PropertyName == CameraPropertyIds.Width)
