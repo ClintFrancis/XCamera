@@ -16,22 +16,14 @@ using Java.Lang;
 using Java.Util;
 using Java.Util.Concurrent;
 using XCamera.Shared;
+using XCamera.Shared.Events;
+using XCamera.Shared.Interfaces;
 
 namespace XCamera.Droid
 {
-	public class ImageCaptureEventArgs : EventArgs
+	public class XCameraCaptureView : ViewGroup, Camera2Basic.ICameraPreview, INativeCameraView
 	{
-		public byte[] Bytes { get; set; }
-
-		public ImageCaptureEventArgs(byte[] bytes)
-		{
-			this.Bytes = bytes;
-		}
-	}
-
-	public class XCameraCaptureView : ViewGroup, Camera2Basic.ICameraPreview
-	{
-		public event EventHandler<ImageCaptureEventArgs> ImageCaptured;
+		public event ImageCapturedEventHandler ImageCaptured;
 
 		public XCameraCaptureView(Context context, CameraOptions option) : base(context)
 		{
@@ -69,16 +61,10 @@ namespace XCamera.Droid
 			mTextureView.Layout(0, 0, r - l, b - t);
 		}
 
-		public void UpdateCameraOption(CameraOptions option)
+		public void UpdateCameraOption()
 		{
-			if (CameraOption == option)
-				return;
-
-			CameraOption = option;
-
 			// TODO Implement Camera switching on Android
 			Log.WriteLine(LogPriority.Warn, "CameraPreview", "Switching Cameras is not yet supported on Android");
-
 		}
 
 		// Max preview width that is guaranteed by Camera2 API
@@ -120,7 +106,18 @@ namespace XCamera.Droid
 		// An additional thread for running tasks that shouldn't block the UI.
 		private HandlerThread mBackgroundThread;
 
-		public CameraOptions CameraOption { get; private set; }
+		CameraOptions cameraOption;
+		public CameraOptions CameraOption
+		{
+			get { return cameraOption; }
+			set
+			{
+				if (cameraOption == value)
+					return;
+
+				UpdateCameraOption();
+			}
+		}
 
 		// This is the output file for our picture.
 		public Java.IO.File File { get; private set; }
@@ -139,6 +136,7 @@ namespace XCamera.Droid
 		public Handler BackgroundHandler { get; set; }
 
 		public Semaphore CameraOpenCloseLock { get; } = new Semaphore(1);
+		CameraOptions INativeCameraView.CameraOption { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
 		// Starts a background thread and its {@link Handler}.
 		private void StartBackgroundThread()
@@ -344,7 +342,7 @@ namespace XCamera.Droid
 			}
 		}
 
-		public void StartPreviewing()
+		public void StartPreview()
 		{
 			Log.Error("CameraPreview", "StartPreviewing");
 
@@ -366,7 +364,7 @@ namespace XCamera.Droid
 			State = CameraState.Preview;
 		}
 
-		public void StopPreviewing()
+		public void StopPreview()
 		{
 			Log.Error("CameraPreview", "StopPreviewing");
 			CloseCamera();
@@ -380,6 +378,11 @@ namespace XCamera.Droid
 			SetUpCameraOutputs(width, height);
 			ConfigureTransform(width, height);
 
+			// TODO Camera Permission
+			if (mCameraId == null)
+			{
+				return;
+			}
 			var manager = (CameraManager)Context.GetSystemService(Context.CameraService);
 
 			try
@@ -566,7 +569,7 @@ namespace XCamera.Droid
 
 		public void CaptureByteArray(byte[] data)
 		{
-			ImageCaptured?.Invoke(this, new ImageCaptureEventArgs(data));
+			ImageCaptured?.Invoke(this, new ImageCapturedEventArgs(data));
 		}
 
 		public void OnCaptureResult(CameraResult result)

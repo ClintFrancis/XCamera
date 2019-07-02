@@ -5,8 +5,9 @@ using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 using XCamera.Droid;
 using XCamera.Shared;
+using XCamera.Shared.Events;
 
-[assembly: ExportRenderer(typeof(XCameraView), typeof(XCameraCaptureView))]
+[assembly: ExportRenderer(typeof(XCameraView), typeof(XCameraRenderer))]
 namespace XCamera.Droid
 {
 	public class XCameraRenderer : ViewRenderer<XCameraView, XCameraCaptureView>
@@ -33,24 +34,13 @@ namespace XCamera.Droid
 			{
 				// Unsubscribe
 				captureBytesCallbackAction = null;
-				element.Capture = null;
-				element.StartCamera = null;
-				element.StopCamera = null;
 			}
 			if (e.NewElement != null)
 			{
 				// Subscribe
 				element = e.NewElement;
 				captureBytesCallbackAction = element.CaptureBytesCallback;
-				element.Capture = new Command(() => CaptureToFile());
-				element.StartCamera = new Command(() =>
-				{
-					cameraPreview.StartPreviewing();
-				});
-				element.StopCamera = new Command(() =>
-				{
-					cameraPreview.StopPreviewing();
-				});
+				element.SetNativeCamera(cameraPreview);
 			}
 		}
 
@@ -61,7 +51,7 @@ namespace XCamera.Droid
 			if (e.PropertyName == "CameraOption")
 			{
 				var view = (XCameraView)sender;
-				cameraPreview.UpdateCameraOption(view.CameraOption);
+				cameraPreview.CameraOption = view.CameraOption;
 			}
 		}
 
@@ -75,13 +65,13 @@ namespace XCamera.Droid
 			cameraPreview.Capture();
 		}
 
-		void ImageCaptured(object sender, ImageCaptureEventArgs e)
+		void ImageCaptured(object sender, ImageCapturedEventArgs e)
 		{
 			if (tempHasCaptured)
 				return;
 
 			tempHasCaptured = true;
-			captureBytesCallbackAction(e.Bytes);
+			captureBytesCallbackAction(e.Data);
 		}
 
 		protected override void Dispose(bool disposing)

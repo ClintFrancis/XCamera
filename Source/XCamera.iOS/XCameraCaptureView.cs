@@ -5,22 +5,12 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 using XCamera.Shared;
+using XCamera.Shared.Events;
+using XCamera.Shared.Interfaces;
 
 namespace XCamera.iOS
 {
-	public delegate void ImageCapturedEventHandler(object sender, ImageCapturedEventArgs e);
-
-	public class ImageCapturedEventArgs : EventArgs
-	{
-		public byte[] Data { get; private set; }
-
-		public ImageCapturedEventArgs(byte[] data)
-		{
-			Data = data;
-		}
-	}
-
-	public class XCameraCaptureView : UIView
+	public class XCameraCaptureView : UIView, INativeCameraView
 	{
 		AVCaptureVideoPreviewLayer previewLayer;
 		AVCaptureSession captureSession;
@@ -30,10 +20,22 @@ namespace XCamera.iOS
 		XCameraCaptureDelegate photoCaptureDelegate;
 		CameraOptions cameraOptions;
 
-		public event EventHandler<EventArgs> Tapped;
 		public event ImageCapturedEventHandler ImageCaptured;
 
 		public bool IsPreviewing { get; private set; }
+
+		public CameraOptions CameraOption
+		{
+			get { return cameraOptions; }
+			set
+			{
+				if (cameraOptions == value)
+					return;
+
+				cameraOptions = value;
+				UpdateCameraOption();
+			}
+		}
 
 		public XCameraCaptureView(CameraOptions options)
 		{
@@ -56,26 +58,6 @@ namespace XCamera.iOS
 				var photoOutputConnection = photoOutput.ConnectionFromMediaType(AVMediaType.Video);
 				photoOutputConnection.VideoOrientation = previewLayer.Connection.VideoOrientation;
 			}
-		}
-
-		public override void TouchesBegan(NSSet touches, UIEvent evt)
-		{
-			base.TouchesBegan(touches, evt);
-
-			UITouch touch = touches.AnyObject as UITouch;
-			if (touch != null)
-			{
-				OnTapped(touch);
-			}
-		}
-
-		protected virtual void OnTapped(UITouch touch)
-		{
-			var devicePoint = previewLayer.CaptureDevicePointOfInterestForPoint(touch.LocationInView(this));
-			//FocusWithMode(AVCaptureFocusMode.AutoFocus, AVCaptureExposureMode.AutoExpose, devicePoint, true);
-
-			//Console.WriteLine("Tapped {0}", devicePoint);
-			Tapped?.Invoke(this, new EventArgs());
 		}
 
 		void Initialize()
@@ -152,19 +134,19 @@ namespace XCamera.iOS
 			}
 		}
 
-		public void StartPreviewing()
+		public void StartPreview()
 		{
 			captureSession.StartRunning();
 			IsPreviewing = true;
 		}
 
-		public void StopPreviewing()
+		public void StopPreview()
 		{
 			captureSession.StopRunning();
 			IsPreviewing = false;
 		}
 
-		public void UpdateCameraOption(CameraOptions option)
+		void UpdateCameraOption()
 		{
 			var devices = AVCaptureDeviceDiscoverySession.Create(
 										new AVCaptureDeviceType[] { AVCaptureDeviceType.BuiltInWideAngleCamera, AVCaptureDeviceType.BuiltInDualCamera },
@@ -172,7 +154,7 @@ namespace XCamera.iOS
 										AVCaptureDevicePosition.Unspecified
 									);
 
-			var cameraPosition = (option == CameraOptions.Front) ? AVCaptureDevicePosition.Front : AVCaptureDevicePosition.Back;
+			var cameraPosition = (cameraOptions == CameraOptions.Front) ? AVCaptureDevicePosition.Front : AVCaptureDevicePosition.Back;
 			var device = devices.Devices.FirstOrDefault(d => d.Position == cameraPosition);
 
 			if (device != null)

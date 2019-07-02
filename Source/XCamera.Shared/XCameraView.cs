@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Windows.Input;
 using Xamarin.Forms;
+using XCamera.Shared.Interfaces;
 
 namespace XCamera.Shared
 {
-	public static class CameraPropertyIds
-	{
-		public static string CameraOption = "CameraOption";
-		public static string Width = "Width";
-		public static string Height = "Height";
-	}
-
 	public class XCameraView : View
 	{
 		public event EventHandler<EventArgs> CameraReady;
 
 		#region Bindable Properties
 		public static readonly BindableProperty CameraProperty = BindableProperty.Create(
-			propertyName: CameraPropertyIds.CameraOption,
+			propertyName: nameof(CameraOption),
 			returnType: typeof(CameraOptions),
 			declaringType: typeof(XCameraView),
 			defaultValue: CameraOptions.Rear,
@@ -38,7 +32,7 @@ namespace XCamera.Shared
 		}
 
 		public static readonly BindableProperty AutoVisibleProperty = BindableProperty.Create(
-			propertyName: "AutoVisible",
+			propertyName: nameof(AutoVisible),
 			returnType: typeof(bool),
 			declaringType: typeof(XCameraView),
 			defaultValue: false);
@@ -51,7 +45,7 @@ namespace XCamera.Shared
 
 		// File Path callback
 		public static readonly BindableProperty CaptureBytesCallbackProperty = BindableProperty.Create(
-			propertyName: "CaptureBytesCallback",
+			propertyName: nameof(CaptureBytesCallback),
 			returnType: typeof(Action<byte[]>),
 			declaringType: typeof(XCameraView),
 			defaultValue: null);
@@ -63,66 +57,72 @@ namespace XCamera.Shared
 		}
 
 		public static readonly BindableProperty CaptureCommandProperty = BindableProperty.Create(
-			propertyName: nameof(CaptureCommandProperty),
+			propertyName: nameof(CaptureCommand),
 			returnType: typeof(ICommand),
 			declaringType: typeof(XCameraView),
 			defaultValue: null);
 
-		public ICommand Capture
+		public ICommand CaptureCommand
 		{
 			get { return (ICommand)GetValue(CaptureCommandProperty); }
 			set
 			{
 				SetValue(CaptureCommandProperty, value);
-				CheckIsReady();
 			}
 		}
 
-		//public static readonly BindableProperty StartCommandProperty = BindableProperty.Create(
-		//	propertyName: nameof(StartCamera),
-		//	returnType: typeof(ICommand),
-		//	declaringType: typeof(XCameraView),
-		//	defaultValue: null);
+		public static readonly BindableProperty StartCommandProperty = BindableProperty.Create(
+			propertyName: nameof(StartCameraCommand),
+			returnType: typeof(ICommand),
+			declaringType: typeof(XCameraView),
+			defaultValue: null);
 
-		public static readonly BindableProperty StartCommandProperty = BindableProperty.Create<XCameraView, ICommand>(p => p.StartCamera, null);
-
-		public ICommand StartCamera
+		public ICommand StartCameraCommand
 		{
 			get { return (ICommand)GetValue(StartCommandProperty); }
 			set
 			{
 				SetValue(StartCommandProperty, value);
-				CheckIsReady();
 			}
 		}
 
 		public static readonly BindableProperty StopCommandProperty = BindableProperty.Create(
-			nameof(StopCamera),
-			typeof(ICommand),
-			typeof(XCameraView));
+			propertyName: nameof(StopCameraCommand),
+			returnType: typeof(ICommand),
+			declaringType: typeof(XCameraView));
 
-		public ICommand StopCamera
+		public ICommand StopCameraCommand
 		{
 			get { return (ICommand)GetValue(StopCommandProperty); }
 			set
 			{
 				SetValue(StopCommandProperty, value);
-				CheckIsReady();
 			}
 		}
+
 		#endregion
+		INativeCameraView cameraInstance;
 
-		public XCameraView()
+
+		public void SetNativeCamera(INativeCameraView nativeCamera)
 		{
-
+			cameraInstance = nativeCamera;
+			CameraReady?.Invoke(this, EventArgs.Empty);
 		}
 
-		void CheckIsReady()
+		public void Capture()
 		{
-			if (StartCommandProperty != null && CaptureCommandProperty != null && StopCommandProperty != null)
-			{
-				CameraReady?.Invoke(this, EventArgs.Empty);
-			}
+			cameraInstance?.Capture();
+		}
+
+		public void StartPreview()
+		{
+			cameraInstance?.StartPreview();
+		}
+
+		public void StopPreview()
+		{
+			cameraInstance?.StopPreview();
 		}
 	}
 }

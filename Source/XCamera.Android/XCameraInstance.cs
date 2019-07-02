@@ -9,6 +9,7 @@ namespace XCamera
 		public static void Init()
 		{
 			var t = typeof(XCameraRenderer);
+			var c = typeof(XCameraCaptureView);
 		}
 	}
 }

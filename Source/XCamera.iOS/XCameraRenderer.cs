@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using UIKit;
 using Xamarin.Forms;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
 using XCamera.iOS;
 using XCamera.Shared;
+using XCamera.Shared.Events;
 
 [assembly: ExportRenderer(typeof(XCameraView), typeof(XCameraRenderer))]
 namespace XCamera.iOS
@@ -25,9 +24,6 @@ namespace XCamera.iOS
 				// Unsubscribe
 				uiCameraPreview.ImageCaptured -= UiCameraPreview_ImageCaptured;
 				capturePathCallbackAction = null;
-				element.Capture = null;
-				element.StartCamera = null;
-				element.StopCamera = null;
 			}
 			if (e.NewElement != null)
 			{
@@ -40,10 +36,8 @@ namespace XCamera.iOS
 
 				// Subscribe
 				element = e.NewElement;
+				element.SetNativeCamera(uiCameraPreview);
 				capturePathCallbackAction = element.CaptureBytesCallback;
-				element.Capture = new Command(() => uiCameraPreview.Capture());
-				element.StartCamera = new Command(() => uiCameraPreview.StartPreviewing());
-				element.StopCamera = new Command(() => uiCameraPreview.StopPreviewing());
 			}
 		}
 
@@ -51,12 +45,10 @@ namespace XCamera.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			Console.WriteLine($"AVCameraCaptureRenderer Property Changed: {e.PropertyName}");
-
 			if (e.PropertyName == CameraPropertyIds.CameraOption)
 			{
 				var view = (XCameraView)sender;
-				uiCameraPreview.UpdateCameraOption(view.CameraOption);
+				uiCameraPreview.CameraOption = view.CameraOption;
 			}
 
 			else if (e.PropertyName == CameraPropertyIds.Width)

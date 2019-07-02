@@ -11,4 +11,8 @@
     </PackageReference>
     <PackageReference Include="Xamarin.Forms" Version="4.0.0.425677" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Events\" />
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
 </Project>
