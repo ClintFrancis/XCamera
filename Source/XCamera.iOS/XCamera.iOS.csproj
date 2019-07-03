@@ -69,6 +69,7 @@
     <Compile Include="XCameraInstance.cs" />
     <Compile Include="XCameraRenderer.cs" />
     <Compile Include="XCameraVideoOutputDelegate.cs" />
+    <Compile Include="Events\CVPixelBufferCapturedEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -78,6 +79,9 @@
       <Project>{26C1F3A0-9646-411D-AE5A-9461EB73229D}</Project>
       <Name>XCamera.Shared</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Events\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\NuGet.Build.Packaging.0.2.5-dev.8\build\NuGet.Build.Packaging.targets" Condition="Exists('..\packages\NuGet.Build.Packaging.0.2.5-dev.8\build\NuGet.Build.Packaging.targets')" />

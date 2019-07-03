@@ -11,10 +11,10 @@ namespace XCamera
 {
 	public class XCameraVideoOutputDelegate : NSObject, IAVCaptureVideoDataOutputSampleBufferDelegate
 	{
-		Action<byte[]> bufferOutputhandler;
+		Action<CVPixelBuffer> bufferOutputhandler;
 		NSDictionary options = new NSDictionary();
 
-		public XCameraVideoOutputDelegate(Action<byte[]> bufferOutputhandler)
+		public XCameraVideoOutputDelegate(Action<CVPixelBuffer> bufferOutputhandler)
 		{
 			this.bufferOutputhandler = bufferOutputhandler;
 		}
@@ -60,9 +60,8 @@ namespace XCamera
 					return;
 				}
 
-				// TODO Stuff here
-				var bytes = new byte[0];
-				bufferOutputhandler.Invoke(bytes);
+				// TODO See if this causes issues disposing directly after
+				bufferOutputhandler.Invoke(pixelBuffer);
 			}
 			catch (Exception x)
 			{

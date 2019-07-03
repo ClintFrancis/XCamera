@@ -12,8 +12,8 @@ namespace XCamera.Shared.Interfaces
 		void SetFrameRate(int frameRate);
 		bool CaptureFrames { get; set; }
 		CameraOptions CameraOption { get; set; }
-		event ImageCapturedEventHandler PhotoCaptured;
-		event ImageCapturedEventHandler FrameCaptured;
+		event NativeImageCaptureEventHandler PhotoCaptured;
+		event NativeImageCaptureEventHandler FrameCaptured;
 
 	}
 }

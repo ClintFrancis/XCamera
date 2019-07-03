@@ -7,6 +7,7 @@ using CoreMedia;
 using CoreVideo;
 using Foundation;
 using UIKit;
+using XCamera.Events;
 using XCamera.Shared;
 using XCamera.Shared.Events;
 using XCamera.Shared.Interfaces;
@@ -28,8 +29,8 @@ namespace XCamera.iOS
 		int targetFramerate;
 		bool isInitialized;
 
-		public event ImageCapturedEventHandler PhotoCaptured;
-		public event ImageCapturedEventHandler FrameCaptured;
+		public event NativeImageCaptureEventHandler PhotoCaptured;
+		public event NativeImageCaptureEventHandler FrameCaptured;
 
 		public bool IsPreviewing { get; private set; }
 
@@ -295,12 +296,12 @@ namespace XCamera.iOS
 
 		void PhotoCapturedHandler(byte[] bytes)
 		{
-			PhotoCaptured?.Invoke(this, new ImageCapturedEventArgs(bytes));
+			PhotoCaptured?.Invoke(this, new ImageBytesCaptureEvent(bytes));
 		}
 
-		void FrameCapturedHandler(byte[] bytes)
+		void FrameCapturedHandler(CVPixelBuffer buffer)
 		{
-			FrameCaptured?.Invoke(this, new ImageCapturedEventArgs(bytes));
+			FrameCaptured?.Invoke(this, new CVPixelBufferCapturedEvent(buffer));
 		}
 	}
 }

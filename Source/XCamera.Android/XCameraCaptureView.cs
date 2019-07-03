@@ -569,7 +569,7 @@ namespace XCamera.Droid
 
 		public void CaptureByteArray(byte[] data)
 		{
-			ImageCaptured?.Invoke(this, new ImageCapturedEventArgs(data));
+			ImageCaptured?.Invoke(this, new NativeImageCapturedEvent(data));
 		}
 
 		public void OnCaptureResult(CameraResult result)

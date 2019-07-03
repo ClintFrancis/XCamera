@@ -65,7 +65,7 @@ namespace XCamera.Droid
 			cameraPreview.Capture();
 		}
 
-		void ImageCaptured(object sender, ImageCapturedEventArgs e)
+		void ImageCaptured(object sender, NativeImageCapturedEvent e)
 		{
 			if (tempHasCaptured)
 				return;

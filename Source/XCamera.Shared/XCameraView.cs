@@ -71,12 +71,12 @@ namespace XCamera.Shared
 
 		public static readonly BindableProperty PhotoCapturedProperty = BindableProperty.Create(
 			propertyName: nameof(PhotoCaptured),
-			returnType: typeof(ImageCapturedEventHandler),
+			returnType: typeof(NativeImageCaptureEventHandler),
 			declaringType: typeof(XCameraView));
 
-		public ImageCapturedEventHandler PhotoCaptured
+		public NativeImageCaptureEventHandler PhotoCaptured
 		{
-			get { return (ImageCapturedEventHandler)GetValue(PhotoCapturedProperty); }
+			get { return (NativeImageCaptureEventHandler)GetValue(PhotoCapturedProperty); }
 			set
 			{
 				SetValue(PhotoCapturedProperty, value);
@@ -85,12 +85,12 @@ namespace XCamera.Shared
 
 		public static readonly BindableProperty FrameCapturedProperty = BindableProperty.Create(
 			propertyName: nameof(FrameCaptured),
-			returnType: typeof(ImageCapturedEventHandler),
+			returnType: typeof(NativeImageCaptureEventHandler),
 			declaringType: typeof(XCameraView));
 
-		public ImageCapturedEventHandler FrameCaptured
+		public NativeImageCaptureEventHandler FrameCaptured
 		{
-			get { return (ImageCapturedEventHandler)GetValue(FrameCapturedProperty); }
+			get { return (NativeImageCaptureEventHandler)GetValue(FrameCapturedProperty); }
 			set
 			{
 				SetValue(FrameCapturedProperty, value);
