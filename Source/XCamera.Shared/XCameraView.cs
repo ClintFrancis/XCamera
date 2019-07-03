@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 using Xamarin.Forms;
+using XCamera.Shared.Events;
 using XCamera.Shared.Interfaces;
 
 namespace XCamera.Shared
@@ -43,6 +44,19 @@ namespace XCamera.Shared
 			set { SetValue(AutoVisibleProperty, value); }
 		}
 
+		public static readonly BindableProperty CaptureFramesProperty = BindableProperty.Create(
+			propertyName: nameof(CaptureFrames),
+			returnType: typeof(bool),
+			declaringType: typeof(XCameraView),
+			defaultValue: false);
+
+
+		public bool CaptureFrames
+		{
+			get { return (bool)GetValue(CaptureFramesProperty); }
+			set { SetValue(CaptureFramesProperty, value); }
+		}
+
 		public static readonly BindableProperty FrameRateProperty = BindableProperty.Create(
 			propertyName: nameof(FrameRate),
 			returnType: typeof(int),
@@ -55,19 +69,35 @@ namespace XCamera.Shared
 			set { SetValue(FrameRateProperty, value); }
 		}
 
-		// File Path callback
-		public static readonly BindableProperty CaptureBytesCallbackProperty = BindableProperty.Create(
-			propertyName: nameof(CaptureBytesCallback),
-			returnType: typeof(Action<byte[]>),
-			declaringType: typeof(XCameraView),
-			defaultValue: null);
+		public static readonly BindableProperty PhotoCapturedProperty = BindableProperty.Create(
+			propertyName: nameof(PhotoCaptured),
+			returnType: typeof(ImageCapturedEventHandler),
+			declaringType: typeof(XCameraView));
 
-		public Action<byte[]> CaptureBytesCallback
+		public ImageCapturedEventHandler PhotoCaptured
 		{
-			get { return (Action<byte[]>)GetValue(CaptureBytesCallbackProperty); }
-			set { SetValue(CaptureBytesCallbackProperty, value); }
+			get { return (ImageCapturedEventHandler)GetValue(PhotoCapturedProperty); }
+			set
+			{
+				SetValue(PhotoCapturedProperty, value);
+			}
 		}
 
+		public static readonly BindableProperty FrameCapturedProperty = BindableProperty.Create(
+			propertyName: nameof(FrameCaptured),
+			returnType: typeof(ImageCapturedEventHandler),
+			declaringType: typeof(XCameraView));
+
+		public ImageCapturedEventHandler FrameCaptured
+		{
+			get { return (ImageCapturedEventHandler)GetValue(FrameCapturedProperty); }
+			set
+			{
+				SetValue(FrameCapturedProperty, value);
+			}
+		}
+
+		/*
 		public static readonly BindableProperty CaptureCommandProperty = BindableProperty.Create(
 			propertyName: nameof(CaptureCommand),
 			returnType: typeof(ICommand),
@@ -111,6 +141,7 @@ namespace XCamera.Shared
 				SetValue(StopCommandProperty, value);
 			}
 		}
+		*/
 
 		#endregion
 		INativeCameraView cameraInstance;

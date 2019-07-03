@@ -18,11 +18,6 @@ namespace XCamera.iOS
 			CompletionHandler = completionHandler;
 		}
 
-		void DidFinish()
-		{
-			CompletionHandler(imageBytes);
-		}
-
 		[Export("captureOutput:willBeginCaptureForResolvedSettings:")]
 		public virtual void WillBeginCapture(AVCapturePhotoOutput captureOutput, AVCaptureResolvedPhotoSettings resolvedSettings)
 		{
@@ -79,7 +74,7 @@ namespace XCamera.iOS
 				Console.WriteLine("No photo data resource");
 			}
 
-			DidFinish();
+			CompletionHandler(imageBytes);
 		}
 	}
 }

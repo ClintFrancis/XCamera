@@ -5,11 +5,15 @@ namespace XCamera.Shared.Interfaces
 {
 	public interface INativeCameraView
 	{
+		void Initialize();
 		void Capture();
 		void StartPreview();
 		void StopPreview();
 		void SetFrameRate(int frameRate);
+		bool CaptureFrames { get; set; }
 		CameraOptions CameraOption { get; set; }
-		event ImageCapturedEventHandler ImageCaptured;
+		event ImageCapturedEventHandler PhotoCaptured;
+		event ImageCapturedEventHandler FrameCaptured;
+
 	}
 }

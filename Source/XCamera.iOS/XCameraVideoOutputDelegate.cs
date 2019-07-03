@@ -49,7 +49,6 @@ namespace XCamera
 		[Export("captureOutput:didOutputSampleBuffer:fromConnection:")]
 		public virtual void DidOutputSampleBuffer(AVCaptureOutput captureOutput, CMSampleBuffer sampleBuffer, AVCaptureConnection connection)
 		{
-			Console.WriteLine("Called");
 			CVPixelBuffer pixelBuffer = null;
 			VNImageRequestHandler imageRequestHandler = null;
 
@@ -62,15 +61,8 @@ namespace XCamera
 				}
 
 				// TODO Stuff here
-
-				//var exifOrientation = ExifOrientationFromDeviceOrientation();
-
-				//imageRequestHandler = new VNImageRequestHandler(pixelBuffer, exifOrientation, options);
-				//imageRequestHandler.Perform(this.requests, out NSError error);
-				//if (error != null)
-				//{
-				//	Console.WriteLine($"{error.LocalizedDescription}");
-				//}
+				var bytes = new byte[0];
+				bufferOutputhandler.Invoke(bytes);
 			}
 			catch (Exception x)
 			{

@@ -1,10 +1,8 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 using XCamera.iOS;
 using XCamera.Shared;
-using XCamera.Shared.Events;
 
 [assembly: ExportRenderer(typeof(XCameraView), typeof(XCameraRenderer))]
 namespace XCamera.iOS
@@ -13,7 +11,6 @@ namespace XCamera.iOS
 	{
 		XCameraView element;
 		XCameraCaptureView uiCameraPreview;
-		Action<byte[]> capturePathCallbackAction;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<XCameraView> e)
 		{
@@ -21,23 +18,27 @@ namespace XCamera.iOS
 
 			if (e.OldElement != null)
 			{
-				// Unsubscribe
-				uiCameraPreview.ImageCaptured -= UiCameraPreview_ImageCaptured;
-				capturePathCallbackAction = null;
+				uiCameraPreview.PhotoCaptured -= e.NewElement.PhotoCaptured;
+				uiCameraPreview.FrameCaptured -= e.NewElement.FrameCaptured;
 			}
+
 			if (e.NewElement != null)
 			{
 				if (Control == null)
 				{
 					uiCameraPreview = new XCameraCaptureView(e.NewElement.CameraOption, e.NewElement.FrameRate);
-					uiCameraPreview.ImageCaptured += UiCameraPreview_ImageCaptured;
+					uiCameraPreview.CaptureFrames = e.NewElement.CaptureFrames;
+					uiCameraPreview.PhotoCaptured += e.NewElement.PhotoCaptured;
+					uiCameraPreview.FrameCaptured += e.NewElement.FrameCaptured;
+
+					uiCameraPreview.Initialize();
+
 					SetNativeControl(uiCameraPreview);
 				}
 
 				// Subscribe
 				element = e.NewElement;
 				element.SetNativeCamera(uiCameraPreview);
-				capturePathCallbackAction = element.CaptureBytesCallback;
 			}
 		}
 
@@ -51,6 +52,12 @@ namespace XCamera.iOS
 				uiCameraPreview.CameraOption = view.CameraOption;
 			}
 
+			if (e.PropertyName == CameraPropertyIds.CaptureFrames)
+			{
+				var view = (XCameraView)sender;
+				uiCameraPreview.CaptureFrames = view.CaptureFrames;
+			}
+
 			if (e.PropertyName == CameraPropertyIds.FrameRate)
 			{
 				var view = (XCameraView)sender;
@@ -61,11 +68,8 @@ namespace XCamera.iOS
 			{
 				uiCameraPreview.SetNeedsDisplay();
 			}
-		}
 
-		void UiCameraPreview_ImageCaptured(object sender, ImageCapturedEventArgs e)
-		{
-			capturePathCallbackAction(e.Data);
+			// todo event handlers?
 		}
 
 		protected override void Dispose(bool disposing)

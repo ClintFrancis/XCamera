@@ -23,13 +23,17 @@ namespace XCamera.iOS
 		AVCaptureDevice captureDevice;
 		XCameraPhotoCaptureDelegate photoCaptureDelegate;
 		XCameraVideoOutputDelegate videoCaptureDelegate;
-		CameraOptions cameraOptions;
+		DispatchQueue queue;
+		AVCaptureVideoDataOutput videoOutput;
 		int targetFramerate;
+		bool isInitialized;
 
-		public event ImageCapturedEventHandler ImageCaptured;
+		public event ImageCapturedEventHandler PhotoCaptured;
+		public event ImageCapturedEventHandler FrameCaptured;
 
 		public bool IsPreviewing { get; private set; }
 
+		CameraOptions cameraOptions;
 		public CameraOptions CameraOption
 		{
 			get { return cameraOptions; }
@@ -43,12 +47,31 @@ namespace XCamera.iOS
 			}
 		}
 
+		bool shouldCaptureFrames;
+		public bool CaptureFrames
+		{
+			get { return shouldCaptureFrames; }
+			set
+			{
+				if (shouldCaptureFrames == value)
+					return;
+
+				shouldCaptureFrames = value;
+
+				if (isInitialized)
+				{
+					captureSession.BeginConfiguration();
+					SetCaptureType();
+					captureSession.CommitConfiguration();
+				}
+			}
+		}
+
 		public XCameraCaptureView(CameraOptions options, int frameRate = 60)
 		{
 			cameraOptions = options;
 			targetFramerate = frameRate;
 			IsPreviewing = false;
-			Initialize();
 		}
 
 		public override void Draw(CGRect rect)
@@ -58,57 +81,62 @@ namespace XCamera.iOS
 			var deviceOrientation = UIDevice.CurrentDevice.Orientation;
 
 			// Update orientation
+
 			if (deviceOrientation.IsPortrait() || deviceOrientation.IsLandscape())
 			{
 				previewLayer.Connection.VideoOrientation = (AVCaptureVideoOrientation)deviceOrientation;
 
-				if (photoOutput != null)
-				{
-					var photoOutputConnection = photoOutput.ConnectionFromMediaType(AVMediaType.Video);
-					photoOutputConnection.VideoOrientation = previewLayer.Connection.VideoOrientation;
-				}
+				// TODO Switch on whether we're capturing
+				//if (photoOutput != null)
+				//{
+				//	var photoOutputConnection = photoOutput.ConnectionFromMediaType(AVMediaType.Video);
+				//	photoOutputConnection.VideoOrientation = previewLayer.Connection.VideoOrientation;
+				//}
 
 			}
 		}
 
-		void Initialize()
+		public void Initialize()
 		{
-			// Create the capture session
 			captureSession = new AVCaptureSession();
-			previewLayer = new AVCaptureVideoPreviewLayer(captureSession)
-			{
-				Frame = Bounds,
-				VideoGravity = AVLayerVideoGravity.ResizeAspectFill
-			};
 
 			captureSession.BeginConfiguration();
 			SetupCaptureDevice();
-			//SetupPhotoCapture();
+			SetupPhotoCapture();
 			SetupVideoCapture();
+			SetCaptureType();
 			SetFrameRate();
 			captureSession.CommitConfiguration();
 
 			Layer.AddSublayer(previewLayer);
+
+			isInitialized = true;
 		}
 
 		void SetupCaptureDevice()
 		{
-			var videoDevices = AVCaptureDeviceDiscoverySession.Create(
-							new AVCaptureDeviceType[] { AVCaptureDeviceType.BuiltInWideAngleCamera, AVCaptureDeviceType.BuiltInDualCamera },
-							AVMediaType.Video,
-							AVCaptureDevicePosition.Unspecified
-						);
-
-			var cameraPosition = (cameraOptions == CameraOptions.Front) ? AVCaptureDevicePosition.Front : AVCaptureDevicePosition.Back;
-			captureDevice = videoDevices.Devices.FirstOrDefault(d => d.Position == cameraPosition);
+			captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
 			if (captureDevice == null)
+			{
+				Console.WriteLine("Error: no video devices available");
 				return;
+			}
 
-			ConfigureCameraForDevice(captureDevice);
+			videoDeviceInput = AVCaptureDeviceInput.FromDevice(captureDevice);
+			if (videoDeviceInput == null)
+			{
+				Console.WriteLine("Error: could not create AVCaptureDeviceInput");
+				return;
+			}
 
-			NSError error;
-			videoDeviceInput = new AVCaptureDeviceInput(captureDevice, out error);
-			captureSession.AddInput(videoDeviceInput);
+			if (captureSession.CanAddInput(videoDeviceInput))
+			{
+				captureSession.AddInput(videoDeviceInput);
+			}
+
+			previewLayer = AVCaptureVideoPreviewLayer.FromSession(captureSession);
+			previewLayer.VideoGravity = AVLayerVideoGravity.ResizeAspect;
+			previewLayer.Connection.VideoOrientation = AVCaptureVideoOrientation.Portrait;
 		}
 
 		void SetupPhotoCapture()
@@ -121,34 +149,37 @@ namespace XCamera.iOS
 
 			if (captureSession.CanAddOutput(photoOutput))
 				captureSession.AddOutput(photoOutput);
-
-			captureSession.CommitConfiguration();
 		}
-
-		XCameraVideoOutputDelegate videoDelegate;
-		DispatchQueue queue;
-		AVCaptureVideoDataOutput videoOutput;
 
 		void SetupVideoCapture()
 		{
 			var settings = new AVVideoSettingsUncompressed();
 			settings.PixelFormatType = CVPixelFormatType.CV32BGRA;
 
-			videoDelegate = new XCameraVideoOutputDelegate(VideoCaptureCallback);
+			videoCaptureDelegate = new XCameraVideoOutputDelegate(FrameCapturedHandler);
 			queue = new DispatchQueue("XCamera.CameraQueue");
 
 			videoOutput = new AVCaptureVideoDataOutput();
 			videoOutput.UncompressedVideoSetting = settings;
 			videoOutput.AlwaysDiscardsLateVideoFrames = true;
-			videoOutput.SetSampleBufferDelegateQueue(videoDelegate, queue);
+			videoOutput.SetSampleBufferDelegateQueue(videoCaptureDelegate, queue);
+		}
 
-			if (captureSession.CanAddOutput(videoOutput))
+		void SetCaptureType()
+		{
+			if (shouldCaptureFrames && captureSession.CanAddOutput(videoOutput))
+			{
 				captureSession.AddOutput(videoOutput);
 
-			// We want the buffers to be in portrait orientation otherwise they are
-			// rotated by 90 degrees. Need to set this _after_ addOutput()!
-			var captureConnection = videoOutput.ConnectionFromMediaType(AVMediaType.Video);
-			captureConnection.VideoOrientation = AVCaptureVideoOrientation.Portrait;
+				// We want the buffers to be in portrait orientation otherwise they are
+				// rotated by 90 degrees. Need to set this _after_ addOutput()!
+				var captureConnection = videoOutput.ConnectionFromMediaType(AVMediaType.Video);
+				captureConnection.VideoOrientation = AVCaptureVideoOrientation.Portrait;
+			}
+			else if (captureSession.Outputs.Contains(videoOutput))
+			{
+				captureSession.RemoveOutput(videoOutput);
+			}
 		}
 
 		void SetFrameRate()
@@ -183,34 +214,6 @@ namespace XCamera.iOS
 				}
 
 				Console.WriteLine("Camera format: " + captureDevice.ActiveFormat);
-			}
-		}
-
-		void VideoCaptureCallback(byte[] input)
-		{
-			throw new NotImplementedException();
-		}
-
-		void ConfigureCameraForDevice(AVCaptureDevice device)
-		{
-			var error = new NSError();
-			if (device.IsFocusModeSupported(AVCaptureFocusMode.ContinuousAutoFocus))
-			{
-				device.LockForConfiguration(out error);
-				device.FocusMode = AVCaptureFocusMode.ContinuousAutoFocus;
-				device.UnlockForConfiguration();
-			}
-			else if (device.IsExposureModeSupported(AVCaptureExposureMode.ContinuousAutoExposure))
-			{
-				device.LockForConfiguration(out error);
-				device.ExposureMode = AVCaptureExposureMode.ContinuousAutoExposure;
-				device.UnlockForConfiguration();
-			}
-			else if (device.IsWhiteBalanceModeSupported(AVCaptureWhiteBalanceMode.ContinuousAutoWhiteBalance))
-			{
-				device.LockForConfiguration(out error);
-				device.WhiteBalanceMode = AVCaptureWhiteBalanceMode.ContinuousAutoWhiteBalance;
-				device.UnlockForConfiguration();
 			}
 		}
 
@@ -282,20 +285,22 @@ namespace XCamera.iOS
 			photoSettings.IsDepthDataDeliveryEnabled(false);
 
 			if (photoSettings.AvailablePreviewPhotoPixelFormatTypes.Count() > 0)
-				photoSettings.PreviewPhotoFormat = new NSDictionary<NSString, NSObject>(CoreVideo.CVPixelBuffer.PixelFormatTypeKey, photoSettings.AvailablePreviewPhotoPixelFormatTypes.First());
+				photoSettings.PreviewPhotoFormat = new NSDictionary<NSString, NSObject>(CVPixelBuffer.PixelFormatTypeKey, photoSettings.AvailablePreviewPhotoPixelFormatTypes.First());
 
 			// Use a separate object for the photo capture delegate to isolate each capture life cycle.
-			photoCaptureDelegate = new XCameraPhotoCaptureDelegate(photoSettings, CompletionHandler);
+			photoCaptureDelegate = new XCameraPhotoCaptureDelegate(photoSettings, PhotoCapturedHandler);
 
 			photoOutput.CapturePhoto(photoSettings, photoCaptureDelegate);
 		}
 
-		void CompletionHandler(byte[] bytes)
+		void PhotoCapturedHandler(byte[] bytes)
 		{
-			var eventData = new ImageCapturedEventArgs(bytes);
-			ImageCaptured?.Invoke(this, eventData);
+			PhotoCaptured?.Invoke(this, new ImageCapturedEventArgs(bytes));
 		}
 
-
+		void FrameCapturedHandler(byte[] bytes)
+		{
+			FrameCaptured?.Invoke(this, new ImageCapturedEventArgs(bytes));
+		}
 	}
 }
