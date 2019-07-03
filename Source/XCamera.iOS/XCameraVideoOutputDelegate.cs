@@ -56,9 +56,7 @@ namespace XCamera
 			{
 				pixelBuffer = sampleBuffer.GetImageBuffer() as CVPixelBuffer;
 				if (pixelBuffer == null)
-				{
 					return;
-				}
 
 				// TODO See if this causes issues disposing directly after
 				bufferOutputhandler.Invoke(pixelBuffer);

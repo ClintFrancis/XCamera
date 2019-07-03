@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Input;
 using Xamarin.Forms;
 using XCamera.Shared.Events;
 using XCamera.Shared.Interfaces;
@@ -97,55 +96,9 @@ namespace XCamera.Shared
 			}
 		}
 
-		/*
-		public static readonly BindableProperty CaptureCommandProperty = BindableProperty.Create(
-			propertyName: nameof(CaptureCommand),
-			returnType: typeof(ICommand),
-			declaringType: typeof(XCameraView),
-			defaultValue: null);
-
-		public ICommand CaptureCommand
-		{
-			get { return (ICommand)GetValue(CaptureCommandProperty); }
-			set
-			{
-				SetValue(CaptureCommandProperty, value);
-			}
-		}
-
-		public static readonly BindableProperty StartCommandProperty = BindableProperty.Create(
-			propertyName: nameof(StartCameraCommand),
-			returnType: typeof(ICommand),
-			declaringType: typeof(XCameraView),
-			defaultValue: null);
-
-		public ICommand StartCameraCommand
-		{
-			get { return (ICommand)GetValue(StartCommandProperty); }
-			set
-			{
-				SetValue(StartCommandProperty, value);
-			}
-		}
-
-		public static readonly BindableProperty StopCommandProperty = BindableProperty.Create(
-			propertyName: nameof(StopCameraCommand),
-			returnType: typeof(ICommand),
-			declaringType: typeof(XCameraView));
-
-		public ICommand StopCameraCommand
-		{
-			get { return (ICommand)GetValue(StopCommandProperty); }
-			set
-			{
-				SetValue(StopCommandProperty, value);
-			}
-		}
-		*/
-
 		#endregion
-		INativeCameraView cameraInstance;
 
+		INativeCameraView cameraInstance;
 
 		public void SetNativeCamera(INativeCameraView nativeCamera)
 		{

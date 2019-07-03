@@ -6,6 +6,8 @@ namespace XCamera.Events
 {
 	public class CVPixelBufferCapturedEvent : NativeImageCaptureEvent
 	{
+		static Type NativeType = typeof(CVPixelBuffer);
+
 		CVPixelBuffer pixelBuffer;
 
 		public CVPixelBufferCapturedEvent(CVPixelBuffer buffer)
@@ -21,6 +23,11 @@ namespace XCamera.Events
 		public override object GetRaw()
 		{
 			return pixelBuffer;
+		}
+
+		public override Type GetRawType()
+		{
+			return NativeType;
 		}
 	}
 }

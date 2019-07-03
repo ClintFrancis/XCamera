@@ -1,5 +1,4 @@
 ﻿using System;
-using XCamera.Shared.Interfaces;
 
 namespace XCamera.Shared.Events
 {
@@ -7,6 +6,8 @@ namespace XCamera.Shared.Events
 
 	public class ImageBytesCaptureEvent : NativeImageCaptureEvent
 	{
+		static Type NativeType = typeof(byte[]);
+
 		byte[] rawData;
 
 		public ImageBytesCaptureEvent(byte[] data)
@@ -22,6 +23,11 @@ namespace XCamera.Shared.Events
 		public override object GetRaw()
 		{
 			return rawData;
+		}
+
+		public override Type GetRawType()
+		{
+			return NativeType;
 		}
 	}
 }

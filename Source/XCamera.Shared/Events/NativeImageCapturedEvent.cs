@@ -12,5 +12,8 @@ namespace XCamera.Shared.Events
 		public abstract byte[] GetBytes();
 
 		public abstract object GetRaw();
+
+		public abstract Type GetRawType();
+
 	}
 }
