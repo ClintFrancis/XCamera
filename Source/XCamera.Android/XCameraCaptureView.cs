@@ -23,7 +23,31 @@ namespace XCamera.Droid
 {
 	public class XCameraCaptureView : ViewGroup, Camera2Basic.ICameraPreview, INativeCameraView
 	{
-		public event ImageCapturedEventHandler ImageCaptured;
+		public event NativeImageCaptureEventHandler PhotoCaptured;
+		public event NativeImageCaptureEventHandler FrameCaptured;
+
+		bool isInitialized;
+		int targetFramerate;
+
+		bool shouldCaptureFrames;
+		public bool CaptureFrames
+		{
+			get { return shouldCaptureFrames; }
+			set
+			{
+				if (shouldCaptureFrames == value)
+					return;
+
+				shouldCaptureFrames = value;
+
+				//if (isInitialized)
+				//{
+				//	captureSession.BeginConfiguration();
+				//	SetCaptureType();
+				//	captureSession.CommitConfiguration();
+				//}
+			}
+		}
 
 		public XCameraCaptureView(Context context, CameraOptions option) : base(context)
 		{
@@ -49,6 +73,11 @@ namespace XCamera.Droid
 			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation270, 180);
 
 			State = CameraState.Stopped;
+		}
+
+		public void Initialize()
+		{
+			isInitialized = true;
 		}
 
 		// bool changed, int left, int top, int right, int bottom
@@ -342,6 +371,13 @@ namespace XCamera.Droid
 			}
 		}
 
+		public void SetFrameRate(int frameRate)
+		{
+			targetFramerate = frameRate;
+			// TODO update the framerate?
+
+		}
+
 		public void StartPreview()
 		{
 			Log.Error("CameraPreview", "StartPreviewing");
@@ -567,10 +603,16 @@ namespace XCamera.Droid
 			}
 		}
 
-		public void CaptureByteArray(byte[] data)
+		public void PhotoCapturedHandler(byte[] data)
 		{
-			ImageCaptured?.Invoke(this, new NativeImageCapturedEvent(data));
+			PhotoCaptured?.Invoke(this, new ImageBytesCaptureEvent(data));
 		}
+
+		// TODO Android native frame handler
+		//void FrameCapturedHandler(CVPixelBuffer buffer)
+		//{
+		//	FrameCaptured?.Invoke(this, new CVPixelBufferCapturedEvent(buffer));
+		//}
 
 		public void OnCaptureResult(CameraResult result)
 		{

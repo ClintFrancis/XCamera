@@ -27,7 +27,7 @@ namespace Camera2Basic.Listeners
 			buffer.Get(bytes);
 			image.Close();
 
-			owner.CaptureByteArray(bytes);
+			owner.PhotoCapturedHandler(bytes);
 		}
 	}
 }

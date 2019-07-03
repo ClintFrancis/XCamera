@@ -32,6 +32,6 @@ namespace Camera2Basic
 		void CreateCameraPreviewSession();
 		void SetAutoFlash(CaptureRequest.Builder requestBuilder);
 
-		void CaptureByteArray(byte[] data);
+		void PhotoCapturedHandler(byte[] data);
 	}
 }

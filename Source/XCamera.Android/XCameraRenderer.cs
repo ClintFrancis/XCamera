@@ -14,7 +14,6 @@ namespace XCamera.Droid
 	{
 		XCameraCaptureView cameraPreview;
 		XCameraView element;
-		Action<byte[]> captureBytesCallbackAction;
 
 		public XCameraRenderer(Context context) : base(context)
 		{
@@ -24,22 +23,28 @@ namespace XCamera.Droid
 		{
 			base.OnElementChanged(e);
 
-			if (Control == null)
-			{
-				cameraPreview = new XCameraCaptureView(Context, e.NewElement.CameraOption);
-				cameraPreview.ImageCaptured += ImageCaptured;
-				SetNativeControl(cameraPreview);
-			}
 			if (e.OldElement != null)
 			{
-				// Unsubscribe
-				captureBytesCallbackAction = null;
+				cameraPreview.PhotoCaptured -= e.NewElement.PhotoCaptured;
+				cameraPreview.FrameCaptured -= e.NewElement.FrameCaptured;
 			}
+
 			if (e.NewElement != null)
 			{
+				if (Control == null)
+				{
+					cameraPreview = new XCameraCaptureView(Context, e.NewElement.CameraOption);
+					cameraPreview.CaptureFrames = e.NewElement.CaptureFrames;
+					cameraPreview.PhotoCaptured += e.NewElement.PhotoCaptured;
+					cameraPreview.FrameCaptured += e.NewElement.FrameCaptured;
+
+					cameraPreview.Initialize();
+
+					SetNativeControl(cameraPreview);
+				}
+
 				// Subscribe
 				element = e.NewElement;
-				captureBytesCallbackAction = element.CaptureBytesCallback;
 				element.SetNativeCamera(cameraPreview);
 			}
 		}
@@ -48,30 +53,45 @@ namespace XCamera.Droid
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == "CameraOption")
+			if (e.PropertyName == CameraPropertyIds.CameraOption)
 			{
 				var view = (XCameraView)sender;
 				cameraPreview.CameraOption = view.CameraOption;
 			}
+
+			if (e.PropertyName == CameraPropertyIds.CaptureFrames)
+			{
+				var view = (XCameraView)sender;
+				cameraPreview.CaptureFrames = view.CaptureFrames;
+			}
+
+			if (e.PropertyName == CameraPropertyIds.FrameRate)
+			{
+				var view = (XCameraView)sender;
+				cameraPreview.SetFrameRate(view.FrameRate);
+			}
+
+			//else if (e.PropertyName == CameraPropertyIds.Width)
+			//{
+			//	cameraPreview.SetNeedsDisplay();
+			//}
 		}
 
 		bool tempHasCaptured = false;
 		void CaptureToFile()
 		{
-			if (captureBytesCallbackAction == null)
-				return;
 
 			tempHasCaptured = false;
 			cameraPreview.Capture();
 		}
 
-		void ImageCaptured(object sender, NativeImageCapturedEvent e)
+		void ImageCaptured(object sender, NativeImageCaptureEvent e)
 		{
 			if (tempHasCaptured)
 				return;
 
 			tempHasCaptured = true;
-			captureBytesCallbackAction(e.Data);
+			//captureBytesCallbackAction(e.Data);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -79,7 +99,6 @@ namespace XCamera.Droid
 			base.Dispose(disposing);
 			if (disposing)
 			{
-				cameraPreview.ImageCaptured -= ImageCaptured;
 				Control.CaptureSession?.Dispose();
 				Control.Dispose();
 			}

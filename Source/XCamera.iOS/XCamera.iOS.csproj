@@ -65,7 +65,6 @@
     <Compile Include="XCameraPhotoCaptureDelegate.cs" />
     <Compile Include="XCameraCaptureView.cs" />
     <Compile Include="MissingBindings.cs" />
-    <Compile Include="UIXCameraView.cs" />
     <Compile Include="XCameraInstance.cs" />
     <Compile Include="XCameraRenderer.cs" />
     <Compile Include="XCameraVideoOutputDelegate.cs" />

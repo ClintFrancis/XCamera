@@ -10,7 +10,7 @@ namespace XCamera.iOS
 	public class XCameraRenderer : ViewRenderer<XCameraView, XCameraCaptureView>
 	{
 		XCameraView element;
-		XCameraCaptureView uiCameraPreview;
+		XCameraCaptureView cameraPreview;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<XCameraView> e)
 		{
@@ -18,27 +18,27 @@ namespace XCamera.iOS
 
 			if (e.OldElement != null)
 			{
-				uiCameraPreview.PhotoCaptured -= e.NewElement.PhotoCaptured;
-				uiCameraPreview.FrameCaptured -= e.NewElement.FrameCaptured;
+				cameraPreview.PhotoCaptured -= e.NewElement.PhotoCaptured;
+				cameraPreview.FrameCaptured -= e.NewElement.FrameCaptured;
 			}
 
 			if (e.NewElement != null)
 			{
 				if (Control == null)
 				{
-					uiCameraPreview = new XCameraCaptureView(e.NewElement.CameraOption, e.NewElement.FrameRate);
-					uiCameraPreview.CaptureFrames = e.NewElement.CaptureFrames;
-					uiCameraPreview.PhotoCaptured += e.NewElement.PhotoCaptured;
-					uiCameraPreview.FrameCaptured += e.NewElement.FrameCaptured;
+					cameraPreview = new XCameraCaptureView(e.NewElement.CameraOption, e.NewElement.FrameRate);
+					cameraPreview.CaptureFrames = e.NewElement.CaptureFrames;
+					cameraPreview.PhotoCaptured += e.NewElement.PhotoCaptured;
+					cameraPreview.FrameCaptured += e.NewElement.FrameCaptured;
 
-					uiCameraPreview.Initialize();
+					cameraPreview.Initialize();
 
-					SetNativeControl(uiCameraPreview);
+					SetNativeControl(cameraPreview);
 				}
 
 				// Subscribe
 				element = e.NewElement;
-				element.SetNativeCamera(uiCameraPreview);
+				element.SetNativeCamera(cameraPreview);
 			}
 		}
 
@@ -49,24 +49,24 @@ namespace XCamera.iOS
 			if (e.PropertyName == CameraPropertyIds.CameraOption)
 			{
 				var view = (XCameraView)sender;
-				uiCameraPreview.CameraOption = view.CameraOption;
+				cameraPreview.CameraOption = view.CameraOption;
 			}
 
 			if (e.PropertyName == CameraPropertyIds.CaptureFrames)
 			{
 				var view = (XCameraView)sender;
-				uiCameraPreview.CaptureFrames = view.CaptureFrames;
+				cameraPreview.CaptureFrames = view.CaptureFrames;
 			}
 
 			if (e.PropertyName == CameraPropertyIds.FrameRate)
 			{
 				var view = (XCameraView)sender;
-				uiCameraPreview.SetFrameRate(view.FrameRate);
+				cameraPreview.SetFrameRate(view.FrameRate);
 			}
 
 			else if (e.PropertyName == CameraPropertyIds.Width)
 			{
-				uiCameraPreview.SetNeedsDisplay();
+				cameraPreview.SetNeedsDisplay();
 			}
 
 			// todo event handlers?

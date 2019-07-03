@@ -16,6 +16,9 @@ namespace XCamera.iOS
 {
 	public class XCameraCaptureView : UIView, INativeCameraView
 	{
+		public event NativeImageCaptureEventHandler PhotoCaptured;
+		public event NativeImageCaptureEventHandler FrameCaptured;
+
 		AVCaptureVideoPreviewLayer previewLayer;
 		AVCaptureSession captureSession;
 		AVCapturePhotoOutput photoOutput;
@@ -28,9 +31,6 @@ namespace XCamera.iOS
 		AVCaptureVideoDataOutput videoOutput;
 		int targetFramerate;
 		bool isInitialized;
-
-		public event NativeImageCaptureEventHandler PhotoCaptured;
-		public event NativeImageCaptureEventHandler FrameCaptured;
 
 		public bool IsPreviewing { get; private set; }
 
@@ -112,6 +112,42 @@ namespace XCamera.iOS
 			Layer.AddSublayer(previewLayer);
 
 			isInitialized = true;
+		}
+
+		public void StartPreview()
+		{
+			if (!captureSession.Running)
+				captureSession.StartRunning();
+			IsPreviewing = true;
+		}
+
+		public void StopPreview()
+		{
+			if (captureSession.Running)
+				captureSession.StopRunning();
+			IsPreviewing = false;
+		}
+
+		public void SetFrameRate(int frameRate)
+		{
+			targetFramerate = frameRate;
+			// TODO update the framerate?
+		}
+
+		public void Capture()
+		{
+			// Create Photo Settings
+			photoSettings = AVCapturePhotoSettings.FromFormat(new NSDictionary<NSString, NSObject>(AVVideo.CodecKey, AVVideo.CodecJPEG));
+			photoSettings.IsHighResolutionPhotoEnabled = true;
+			photoSettings.IsDepthDataDeliveryEnabled(false);
+
+			if (photoSettings.AvailablePreviewPhotoPixelFormatTypes.Count() > 0)
+				photoSettings.PreviewPhotoFormat = new NSDictionary<NSString, NSObject>(CVPixelBuffer.PixelFormatTypeKey, photoSettings.AvailablePreviewPhotoPixelFormatTypes.First());
+
+			// Use a separate object for the photo capture delegate to isolate each capture life cycle.
+			photoCaptureDelegate = new XCameraPhotoCaptureDelegate(photoSettings, PhotoCapturedHandler);
+
+			photoOutput.CapturePhoto(photoSettings, photoCaptureDelegate);
 		}
 
 		void SetupCaptureDevice()
@@ -218,27 +254,6 @@ namespace XCamera.iOS
 			}
 		}
 
-		public void StartPreview()
-		{
-			if (!captureSession.Running)
-				captureSession.StartRunning();
-			IsPreviewing = true;
-		}
-
-		public void StopPreview()
-		{
-			if (captureSession.Running)
-				captureSession.StopRunning();
-			IsPreviewing = false;
-		}
-
-		public void SetFrameRate(int frameRate)
-		{
-			targetFramerate = frameRate;
-			// TODO update the framerate?
-
-		}
-
 		void UpdateCameraOption()
 		{
 			var devices = AVCaptureDeviceDiscoverySession.Create(
@@ -271,27 +286,6 @@ namespace XCamera.iOS
 
 				captureSession.CommitConfiguration();
 			}
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
-		}
-
-		public void Capture()
-		{
-			// Create Photo Settings
-			photoSettings = AVCapturePhotoSettings.FromFormat(new NSDictionary<NSString, NSObject>(AVVideo.CodecKey, AVVideo.CodecJPEG));
-			photoSettings.IsHighResolutionPhotoEnabled = true;
-			photoSettings.IsDepthDataDeliveryEnabled(false);
-
-			if (photoSettings.AvailablePreviewPhotoPixelFormatTypes.Count() > 0)
-				photoSettings.PreviewPhotoFormat = new NSDictionary<NSString, NSObject>(CVPixelBuffer.PixelFormatTypeKey, photoSettings.AvailablePreviewPhotoPixelFormatTypes.First());
-
-			// Use a separate object for the photo capture delegate to isolate each capture life cycle.
-			photoCaptureDelegate = new XCameraPhotoCaptureDelegate(photoSettings, PhotoCapturedHandler);
-
-			photoOutput.CapturePhoto(photoSettings, photoCaptureDelegate);
 		}
 
 		void PhotoCapturedHandler(byte[] bytes)
