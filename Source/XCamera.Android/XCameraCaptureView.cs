@@ -26,76 +26,6 @@ namespace XCamera.Droid
 		public event NativeImageCaptureEventHandler PhotoCaptured;
 		public event NativeImageCaptureEventHandler FrameCaptured;
 
-		bool isInitialized;
-		int targetFramerate;
-
-		bool shouldCaptureFrames;
-		public bool CaptureFrames
-		{
-			get { return shouldCaptureFrames; }
-			set
-			{
-				if (shouldCaptureFrames == value)
-					return;
-
-				shouldCaptureFrames = value;
-
-				//if (isInitialized)
-				//{
-				//	captureSession.BeginConfiguration();
-				//	SetCaptureType();
-				//	captureSession.CommitConfiguration();
-				//}
-			}
-		}
-
-		public XCameraCaptureView(Context context, CameraOptions option) : base(context)
-		{
-			CameraOption = option;
-
-			var path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
-			var nativePath = Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDocuments);
-
-			// Camera Setup
-			File = new Java.IO.File(path, "pic.jpg"); // TODO Depreciate this
-			CaptureCallback = new CameraCaptureListener(this);
-			mOnImageAvailableListener = new ImageAvailableListener(this);
-			mStateCallback = new CameraStateListener(this);
-			mSurfaceTextureListener = new Camera2BasicSurfaceTextureListener(this);
-
-			mTextureView = new Camera2Basic.AutoFitTextureView(context);
-			AddView(mTextureView);
-
-			// fill ORIENTATIONS list
-			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation0, 90);
-			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation90, 0);
-			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation180, 270);
-			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation270, 180);
-
-			State = CameraState.Stopped;
-		}
-
-		public void Initialize()
-		{
-			isInitialized = true;
-		}
-
-		// bool changed, int left, int top, int right, int bottom
-		protected override void OnLayout(bool changed, int l, int t, int r, int b)
-		{
-			var msw = MeasureSpec.MakeMeasureSpec(r - l, MeasureSpecMode.Exactly);
-			var msh = MeasureSpec.MakeMeasureSpec(b - t, MeasureSpecMode.Exactly);
-
-			mTextureView.Measure(msw, msh);
-			mTextureView.Layout(0, 0, r - l, b - t);
-		}
-
-		public void UpdateCameraOption()
-		{
-			// TODO Implement Camera switching on Android
-			Log.WriteLine(LogPriority.Warn, "CameraPreview", "Switching Cameras is not yet supported on Android");
-		}
-
 		// Max preview width that is guaranteed by Camera2 API
 		private static readonly int MAX_PREVIEW_WIDTH = 1920;
 
@@ -166,6 +96,347 @@ namespace XCamera.Droid
 
 		public Semaphore CameraOpenCloseLock { get; } = new Semaphore(1);
 		CameraOptions INativeCameraView.CameraOption { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+		bool isInitialized;
+		int targetFramerate;
+
+		bool shouldCaptureFrames;
+		public bool CaptureFrames
+		{
+			get { return shouldCaptureFrames; }
+			set
+			{
+				if (shouldCaptureFrames == value)
+					return;
+
+				shouldCaptureFrames = value;
+
+				//if (isInitialized)
+				//{
+				//	captureSession.BeginConfiguration();
+				//	SetCaptureType();
+				//	captureSession.CommitConfiguration();
+				//}
+			}
+		}
+
+		public XCameraCaptureView(Context context, CameraOptions option) : base(context)
+		{
+			CameraOption = option;
+
+			var path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+			var nativePath = Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDocuments);
+
+			// Camera Setup
+			File = new Java.IO.File(path, "pic.jpg"); // TODO Depreciate this
+			CaptureCallback = new CameraCaptureListener(this);
+			mOnImageAvailableListener = new ImageAvailableListener(this);
+			mStateCallback = new CameraStateListener(this);
+			mSurfaceTextureListener = new Camera2BasicSurfaceTextureListener(this);
+
+			mTextureView = new Camera2Basic.AutoFitTextureView(context);
+			AddView(mTextureView);
+
+			// fill ORIENTATIONS list
+			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation0, 90);
+			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation90, 0);
+			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation180, 270);
+			ORIENTATIONS.Append((int)SurfaceOrientation.Rotation270, 180);
+
+			State = CameraState.Stopped;
+		}
+
+		public void Initialize()
+		{
+			isInitialized = true;
+		}
+
+		public void SetFrameRate(int frameRate)
+		{
+			targetFramerate = frameRate;
+			// TODO update the framerate?
+
+		}
+
+		public void StartPreview()
+		{
+			Log.Error("CameraPreview", "StartPreviewing");
+
+			StartBackgroundThread();
+
+			// When the screen is turned off and turned back on, the SurfaceTexture is already
+			// available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
+			// a camera and start preview from here (otherwise, we wait until the surface is ready in
+			// the SurfaceTextureListener).
+			if (mTextureView.IsAvailable)
+			{
+				OpenCamera(mTextureView.Width, mTextureView.Height);
+			}
+			else
+			{
+				mTextureView.SurfaceTextureListener = mSurfaceTextureListener;
+			}
+
+			State = CameraState.Preview;
+		}
+
+		public void StopPreview()
+		{
+			Log.Error("CameraPreview", "StopPreviewing");
+			CloseCamera();
+			StopBackgroundThread();
+			State = CameraState.Stopped;
+		}
+
+		// Opens the camera specified by {@link Camera2BasicFragment#mCameraId}.
+		public void OpenCamera(int width, int height)
+		{
+			SetUpCameraOutputs(width, height);
+			ConfigureTransform(width, height);
+
+			// TODO Camera Permission
+			if (mCameraId == null)
+			{
+				return;
+			}
+			var manager = (CameraManager)Context.GetSystemService(Context.CameraService);
+
+			try
+			{
+				if (!CameraOpenCloseLock.TryAcquire(2500, TimeUnit.Milliseconds))
+				{
+					throw new RuntimeException("Time out waiting to lock camera opening.");
+				}
+				manager.OpenCamera(mCameraId, mStateCallback, BackgroundHandler);
+			}
+			catch (CameraAccessException e)
+			{
+				e.PrintStackTrace();
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException("Interrupted while trying to lock camera opening.", e);
+			}
+		}
+
+		// Closes the current {@link CameraDevice}.
+		public void CloseCamera()
+		{
+			try
+			{
+				CameraOpenCloseLock.Acquire();
+				if (null != CaptureSession)
+				{
+					CaptureSession.Close();
+					CaptureSession = null;
+				}
+				if (null != Device)
+				{
+					Device.Close();
+					Device = null;
+				}
+				if (null != mImageReader)
+				{
+					mImageReader.Close();
+					mImageReader = null;
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
+			}
+			finally
+			{
+				CameraOpenCloseLock.Release();
+			}
+		}
+
+		public void ConfigureTransform(int viewWidth, int viewHeight)
+		{
+			if (null == mTextureView || null == mPreviewSize)
+				return;
+
+			var windowManager = Context.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
+			var rotation = (int)windowManager.DefaultDisplay.Rotation;
+			Matrix matrix = new Matrix();
+			RectF viewRect = new RectF(0, 0, viewWidth, viewHeight);
+			RectF bufferRect = new RectF(0, 0, mPreviewSize.Height, mPreviewSize.Width);
+			float centerX = viewRect.CenterX();
+			float centerY = viewRect.CenterY();
+
+			if ((int)SurfaceOrientation.Rotation90 == rotation || (int)SurfaceOrientation.Rotation270 == rotation)
+			{
+				bufferRect.Offset(centerX - bufferRect.CenterX(), centerY - bufferRect.CenterY());
+				matrix.SetRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.Fill);
+				float scale = System.Math.Max((float)viewHeight / mPreviewSize.Height, (float)viewWidth / mPreviewSize.Width);
+				matrix.PostScale(scale, scale, centerX, centerY);
+				matrix.PostRotate(90 * (rotation - 2), centerX, centerY);
+			}
+			else if ((int)SurfaceOrientation.Rotation180 == rotation)
+			{
+				matrix.PostRotate(180, centerX, centerY);
+			}
+			mTextureView.SetTransform(matrix);
+		}
+
+		public void CreateCameraPreviewSession()
+		{
+			try
+			{
+				SurfaceTexture texture = mTextureView.SurfaceTexture;
+				if (texture == null)
+					throw new IllegalStateException("texture is null");
+
+				// We configure the size of default buffer to be the size of camera preview we want.
+				texture.SetDefaultBufferSize(mPreviewSize.Width, mPreviewSize.Height);
+
+				// This is the output Surface we need to start preview.
+				Surface surface = new Surface(texture);
+
+				// We set up a CaptureRequest.Builder with the output Surface.
+				PreviewRequestBuilder = Device.CreateCaptureRequest(CameraTemplate.Preview);
+				PreviewRequestBuilder.AddTarget(surface);
+
+				// Here, we create a CameraCaptureSession for camera preview.
+				List<Surface> surfaces = new List<Surface>();
+				surfaces.Add(mImageReader.Surface);
+				surfaces.Add(surface);
+				Device.CreateCaptureSession(surfaces, new CameraCaptureSessionCallback(this), null);
+
+			}
+			catch (CameraAccessException e)
+			{
+				e.PrintStackTrace();
+			}
+		}
+
+		public void SetAutoFlash(CaptureRequest.Builder requestBuilder)
+		{
+			if (mFlashSupported)
+				requestBuilder.Set(CaptureRequest.ControlAeMode, (int)ControlAEMode.OnAutoFlash);
+		}
+
+		public void Capture()
+		{
+			if (State != CameraState.Preview)
+				return;
+
+			LockFocus();
+		}
+
+		public void CaptureStillPicture()
+		{
+			try
+			{
+				if (null == Device)
+					return;
+
+				// This is the CaptureRequest.Builder that we use to take a picture.
+				if (stillCaptureBuilder == null)
+					stillCaptureBuilder = Device.CreateCaptureRequest(CameraTemplate.StillCapture);
+
+				stillCaptureBuilder.AddTarget(mImageReader.Surface);
+
+				// Use the same AE and AF modes as the preview.
+				stillCaptureBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousPicture);
+				SetAutoFlash(stillCaptureBuilder);
+
+				// Orientation
+				var windowManager = Context.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
+				int rotation = (int)windowManager.DefaultDisplay.Rotation;
+				stillCaptureBuilder.Set(CaptureRequest.JpegOrientation, GetOrientation(rotation));
+
+				CaptureSession.StopRepeating();
+				CaptureSession.Capture(stillCaptureBuilder.Build(), new CameraCaptureStillPictureSessionCallback(this), null);
+			}
+			catch (CameraAccessException e)
+			{
+				e.PrintStackTrace();
+			}
+		}
+
+		public void RunPrecaptureSequence()
+		{
+			try
+			{
+				// This is how to tell the camera to trigger.
+				PreviewRequestBuilder.Set(CaptureRequest.ControlAePrecaptureTrigger, (int)ControlAEPrecaptureTrigger.Start);
+				// Tell #mCaptureCallback to wait for the precapture sequence to be set.
+				State = Camera2Basic.CameraState.WaitingPrecapture;
+				CaptureSession.Capture(PreviewRequestBuilder.Build(), CaptureCallback, BackgroundHandler);
+			}
+			catch (CameraAccessException e)
+			{
+				e.PrintStackTrace();
+			}
+		}
+
+		public void PhotoCapturedHandler(byte[] data)
+		{
+			PhotoCaptured?.Invoke(this, new ImageBytesCaptureEvent(data));
+		}
+
+		// TODO Android native frame handler
+		//void FrameCapturedHandler(CVPixelBuffer buffer)
+		//{
+		//	FrameCaptured?.Invoke(this, new CVPixelBufferCapturedEvent(buffer));
+		//}
+
+		public void OnCaptureResult(CameraResult result)
+		{
+			UnlockFocus();
+		}
+
+		public void LockFocus()
+		{
+			try
+			{
+				// This is how to tell the camera to lock focus.
+				PreviewRequestBuilder.Set(CaptureRequest.ControlAfTrigger, (int)ControlAFTrigger.Start);
+				// Tell #mCaptureCallback to wait for the lock.
+				State = CameraState.WaitingLock;
+				CaptureSession.Capture(PreviewRequestBuilder.Build(), CaptureCallback, BackgroundHandler);
+			}
+			catch (CameraAccessException e)
+			{
+				e.PrintStackTrace();
+			}
+		}
+
+		public void UnlockFocus()
+		{
+			try
+			{
+				// Reset the auto-focus trigger
+				PreviewRequestBuilder.Set(CaptureRequest.ControlAfTrigger, (int)ControlAFTrigger.Cancel);
+				SetAutoFlash(PreviewRequestBuilder);
+				CaptureSession.Capture(PreviewRequestBuilder.Build(), CaptureCallback, BackgroundHandler);
+
+				// After this, the camera will go back to the normal state of preview.
+				State = CameraState.Preview;
+				CaptureSession.SetRepeatingRequest(PreviewRequest, CaptureCallback, BackgroundHandler);
+			}
+			catch (CameraAccessException e)
+			{
+				e.PrintStackTrace();
+			}
+		}
+
+		public void UpdateCameraOption()
+		{
+			// TODO Implement Camera switching on Android
+			Log.WriteLine(LogPriority.Warn, "CameraPreview", "Switching Cameras is not yet supported on Android");
+		}
+
+		// bool changed, int left, int top, int right, int bottom
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		{
+			var msw = MeasureSpec.MakeMeasureSpec(r - l, MeasureSpecMode.Exactly);
+			var msh = MeasureSpec.MakeMeasureSpec(b - t, MeasureSpecMode.Exactly);
+
+			mTextureView.Measure(msw, msh);
+			mTextureView.Layout(0, 0, r - l, b - t);
+		}
 
 		// Starts a background thread and its {@link Handler}.
 		private void StartBackgroundThread()
@@ -371,170 +642,7 @@ namespace XCamera.Droid
 			}
 		}
 
-		public void SetFrameRate(int frameRate)
-		{
-			targetFramerate = frameRate;
-			// TODO update the framerate?
 
-		}
-
-		public void StartPreview()
-		{
-			Log.Error("CameraPreview", "StartPreviewing");
-
-			StartBackgroundThread();
-
-			// When the screen is turned off and turned back on, the SurfaceTexture is already
-			// available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
-			// a camera and start preview from here (otherwise, we wait until the surface is ready in
-			// the SurfaceTextureListener).
-			if (mTextureView.IsAvailable)
-			{
-				OpenCamera(mTextureView.Width, mTextureView.Height);
-			}
-			else
-			{
-				mTextureView.SurfaceTextureListener = mSurfaceTextureListener;
-			}
-
-			State = CameraState.Preview;
-		}
-
-		public void StopPreview()
-		{
-			Log.Error("CameraPreview", "StopPreviewing");
-			CloseCamera();
-			StopBackgroundThread();
-			State = CameraState.Stopped;
-		}
-
-		// Opens the camera specified by {@link Camera2BasicFragment#mCameraId}.
-		public void OpenCamera(int width, int height)
-		{
-			SetUpCameraOutputs(width, height);
-			ConfigureTransform(width, height);
-
-			// TODO Camera Permission
-			if (mCameraId == null)
-			{
-				return;
-			}
-			var manager = (CameraManager)Context.GetSystemService(Context.CameraService);
-
-			try
-			{
-				if (!CameraOpenCloseLock.TryAcquire(2500, TimeUnit.Milliseconds))
-				{
-					throw new RuntimeException("Time out waiting to lock camera opening.");
-				}
-				manager.OpenCamera(mCameraId, mStateCallback, BackgroundHandler);
-			}
-			catch (CameraAccessException e)
-			{
-				e.PrintStackTrace();
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException("Interrupted while trying to lock camera opening.", e);
-			}
-		}
-
-		// Closes the current {@link CameraDevice}.
-		public void CloseCamera()
-		{
-			try
-			{
-				CameraOpenCloseLock.Acquire();
-				if (null != CaptureSession)
-				{
-					CaptureSession.Close();
-					CaptureSession = null;
-				}
-				if (null != Device)
-				{
-					Device.Close();
-					Device = null;
-				}
-				if (null != mImageReader)
-				{
-					mImageReader.Close();
-					mImageReader = null;
-				}
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
-			}
-			finally
-			{
-				CameraOpenCloseLock.Release();
-			}
-		}
-
-		public void ConfigureTransform(int viewWidth, int viewHeight)
-		{
-			if (null == mTextureView || null == mPreviewSize)
-				return;
-
-			var windowManager = Context.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
-			var rotation = (int)windowManager.DefaultDisplay.Rotation;
-			Matrix matrix = new Matrix();
-			RectF viewRect = new RectF(0, 0, viewWidth, viewHeight);
-			RectF bufferRect = new RectF(0, 0, mPreviewSize.Height, mPreviewSize.Width);
-			float centerX = viewRect.CenterX();
-			float centerY = viewRect.CenterY();
-
-			if ((int)SurfaceOrientation.Rotation90 == rotation || (int)SurfaceOrientation.Rotation270 == rotation)
-			{
-				bufferRect.Offset(centerX - bufferRect.CenterX(), centerY - bufferRect.CenterY());
-				matrix.SetRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.Fill);
-				float scale = System.Math.Max((float)viewHeight / mPreviewSize.Height, (float)viewWidth / mPreviewSize.Width);
-				matrix.PostScale(scale, scale, centerX, centerY);
-				matrix.PostRotate(90 * (rotation - 2), centerX, centerY);
-			}
-			else if ((int)SurfaceOrientation.Rotation180 == rotation)
-			{
-				matrix.PostRotate(180, centerX, centerY);
-			}
-			mTextureView.SetTransform(matrix);
-		}
-
-		public void CreateCameraPreviewSession()
-		{
-			try
-			{
-				SurfaceTexture texture = mTextureView.SurfaceTexture;
-				if (texture == null)
-					throw new IllegalStateException("texture is null");
-
-				// We configure the size of default buffer to be the size of camera preview we want.
-				texture.SetDefaultBufferSize(mPreviewSize.Width, mPreviewSize.Height);
-
-				// This is the output Surface we need to start preview.
-				Surface surface = new Surface(texture);
-
-				// We set up a CaptureRequest.Builder with the output Surface.
-				PreviewRequestBuilder = Device.CreateCaptureRequest(CameraTemplate.Preview);
-				PreviewRequestBuilder.AddTarget(surface);
-
-				// Here, we create a CameraCaptureSession for camera preview.
-				List<Surface> surfaces = new List<Surface>();
-				surfaces.Add(mImageReader.Surface);
-				surfaces.Add(surface);
-				Device.CreateCaptureSession(surfaces, new CameraCaptureSessionCallback(this), null);
-
-			}
-			catch (CameraAccessException e)
-			{
-				e.PrintStackTrace();
-			}
-		}
-
-		public void SetAutoFlash(CaptureRequest.Builder requestBuilder)
-		{
-			if (mFlashSupported)
-				requestBuilder.Set(CaptureRequest.ControlAeMode, (int)ControlAEMode.OnAutoFlash);
-		}
 
 		private static readonly SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -548,110 +656,6 @@ namespace XCamera.Droid
 			return (ORIENTATIONS.Get(rotation) + mSensorOrientation + 270) % 360;
 		}
 
-		public void Capture()
-		{
-			if (State != CameraState.Preview)
-				return;
 
-			LockFocus();
-		}
-
-		public void CaptureStillPicture()
-		{
-			try
-			{
-				if (null == Device)
-					return;
-
-				// This is the CaptureRequest.Builder that we use to take a picture.
-				if (stillCaptureBuilder == null)
-					stillCaptureBuilder = Device.CreateCaptureRequest(CameraTemplate.StillCapture);
-
-				stillCaptureBuilder.AddTarget(mImageReader.Surface);
-
-				// Use the same AE and AF modes as the preview.
-				stillCaptureBuilder.Set(CaptureRequest.ControlAfMode, (int)ControlAFMode.ContinuousPicture);
-				SetAutoFlash(stillCaptureBuilder);
-
-				// Orientation
-				var windowManager = Context.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
-				int rotation = (int)windowManager.DefaultDisplay.Rotation;
-				stillCaptureBuilder.Set(CaptureRequest.JpegOrientation, GetOrientation(rotation));
-
-				CaptureSession.StopRepeating();
-				CaptureSession.Capture(stillCaptureBuilder.Build(), new CameraCaptureStillPictureSessionCallback(this), null);
-			}
-			catch (CameraAccessException e)
-			{
-				e.PrintStackTrace();
-			}
-		}
-
-		public void RunPrecaptureSequence()
-		{
-			try
-			{
-				// This is how to tell the camera to trigger.
-				PreviewRequestBuilder.Set(CaptureRequest.ControlAePrecaptureTrigger, (int)ControlAEPrecaptureTrigger.Start);
-				// Tell #mCaptureCallback to wait for the precapture sequence to be set.
-				State = Camera2Basic.CameraState.WaitingPrecapture;
-				CaptureSession.Capture(PreviewRequestBuilder.Build(), CaptureCallback, BackgroundHandler);
-			}
-			catch (CameraAccessException e)
-			{
-				e.PrintStackTrace();
-			}
-		}
-
-		public void PhotoCapturedHandler(byte[] data)
-		{
-			PhotoCaptured?.Invoke(this, new ImageBytesCaptureEvent(data));
-		}
-
-		// TODO Android native frame handler
-		//void FrameCapturedHandler(CVPixelBuffer buffer)
-		//{
-		//	FrameCaptured?.Invoke(this, new CVPixelBufferCapturedEvent(buffer));
-		//}
-
-		public void OnCaptureResult(CameraResult result)
-		{
-			UnlockFocus();
-		}
-
-		public void LockFocus()
-		{
-			try
-			{
-				// This is how to tell the camera to lock focus.
-				PreviewRequestBuilder.Set(CaptureRequest.ControlAfTrigger, (int)ControlAFTrigger.Start);
-				// Tell #mCaptureCallback to wait for the lock.
-				State = CameraState.WaitingLock;
-				CaptureSession.Capture(PreviewRequestBuilder.Build(), CaptureCallback, BackgroundHandler);
-			}
-			catch (CameraAccessException e)
-			{
-				e.PrintStackTrace();
-			}
-		}
-
-		public void UnlockFocus()
-		{
-			try
-			{
-				// Reset the auto-focus trigger
-				PreviewRequestBuilder.Set(CaptureRequest.ControlAfTrigger, (int)ControlAFTrigger.Cancel);
-				SetAutoFlash(PreviewRequestBuilder);
-				CaptureSession.Capture(PreviewRequestBuilder.Build(), CaptureCallback, BackgroundHandler);
-
-				// After this, the camera will go back to the normal state of preview.
-				State = CameraState.Preview;
-				CaptureSession.SetRepeatingRequest(PreviewRequest, CaptureCallback, BackgroundHandler);
-			}
-			catch (CameraAccessException e)
-			{
-				e.PrintStackTrace();
-			}
-		}
 	}
 }
